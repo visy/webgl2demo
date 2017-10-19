@@ -1,0 +1,301 @@
+<html>
+<head>
+<style type = "text/css">
+body {
+  margin: 0px;
+  overflow: hidden;
+}
+</style>
+<script src = "three.min.js">
+</script>
+<script id = "vertexShader" type = "glsl">
+varying vec2 vUv; 
+void main()
+{
+    vUv = uv;
+
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
+    gl_Position = projectionMatrix * mvPosition;
+}
+</script>
+<script id = "fragmentShader" type = "glsl">
+uniform float iTime;
+uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
+varying vec2 vUv;
+#define NEAR_CLIPPING_PLANE 0.0001
+#define FAR_CLIPPING_PLANE 70.0
+#define NUMBER_OF_MARCH_STEPS 500
+#define EPSILON 0.001
+#define DISTANCE_BIAS 0.7
+
+float sdSphere(vec3 p, float s)
+{
+	return length(p) - (s);
+}
+
+float sdBox( vec3 p, vec3 b )
+{
+  vec3 d = abs(p) - b;
+  return min(max(d.x,max(d.y,d.z)),0.0) +
+         length(max(d,0.0));
+}
+
+float sdPlane( vec3 p, vec4 n )
+{
+  return dot(p,n.xyz) + n.w;
+}
+
+
+float fmod(float a, float b)
+{
+    if(a<0.0)
+    {
+        return b - mod(abs(a), b);
+    }
+    return mod(a, b);
+}
+
+const float kHashScale1 = 443.8975;
+
+float hash11(float p) {
+  vec3 p3 = fract(vec3(p) * kHashScale1);
+  p3 += dot(p3, p3.yzx + 19.19);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+void pR(inout vec2 p, float a) {
+	p = cos(a)*p + sin(a)*vec2(p.y, -p.x);
+}
+
+float fOpUnionRound(float a, float b, float r) {
+	vec2 u = max(vec2(r - a,r - b), vec2(0));
+	return max(r, min (a, b)) - length(u);
+}
+
+
+vec2 scene(vec3 pos)
+{
+    vec3 translate = vec3(0.0, 0.0, 0.);
+
+    vec3 opos = pos - translate;
+    vec3 opos_ = opos;
+
+    
+    float vali = 1.5;
+    opos.x = fmod(opos.x, vali) - (vali/2.0); 
+    opos.z = fmod(opos.z, vali) - (vali/2.0); 
+    pR(opos.xz,iTime*2.5+pos.z);
+
+    float distance = sdBox(opos, vec3(0.05,0.9,0.05));
+	vec3 o = opos;
+    pR(opos.yx,1.0);
+    distance = fOpUnionRound(distance,sdBox(opos+vec3(-0.1+0.1*cos(pos.z*10.1),0.0,0.0), vec3(0.01,0.3,0.01)),0.09);
+	opos = o;        
+	float distance2 = sdSphere(opos+vec3(0.0,-0.6,0.0),0.4);
+
+    opos = opos_;
+    float distance3 = sdPlane(opos,vec4(0.0, 5.0, 0.0, 4.5));
+ 
+    float finalDist = 0.0;
+    finalDist = min(distance,distance2);
+    finalDist = min(finalDist,distance3);
+
+    float materialID = 0.0;
+    if (finalDist < distance) materialID = 1.0;
+    if (finalDist >= distance2) materialID = 2.0;
+    else if (finalDist < distance3) materialID = 3.0;
+
+    return vec2(finalDist, materialID);
+}
+
+float calcAO( in vec3 pos, in vec3 nor )
+{
+	float occ = 0.0;
+    float sca = 1.0;
+    for( int i=0; i<5; i++ )
+    {
+        float hr = 0.01 + 0.12*float(i)/4.0;
+        vec3 aopos =  nor * hr + pos;
+        float dd = scene( aopos ).x;
+        occ += -(dd-hr)*sca;
+        sca *= 0.95;
+    }
+    return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    
+}
+
+
+vec2 raymarch(vec3 position, vec3 direction)
+{
+    float total_distance = NEAR_CLIPPING_PLANE;
+    for(int i = 0 ; i < NUMBER_OF_MARCH_STEPS ; ++i)
+    {
+        vec2 result = scene(position + direction * total_distance);
+        if(result.x < EPSILON)
+        {
+            return vec2(total_distance, result.y);
+        }
+        
+        total_distance += result.x * DISTANCE_BIAS;
+        
+        if(total_distance > FAR_CLIPPING_PLANE)
+            break;
+    }
+    return vec2(FAR_CLIPPING_PLANE, 0.0);
+}
+
+vec3 normal(vec3 ray_hit_position, float smoothness)
+{	
+	vec3 n;
+	vec2 dn = vec2(smoothness, 0.0);
+	n.x	= scene(ray_hit_position + dn.xyy).x - scene(ray_hit_position - dn.xyy).x;
+	n.y	= scene(ray_hit_position + dn.yxy).x - scene(ray_hit_position - dn.yxy).x;
+	n.z	= scene(ray_hit_position + dn.yyx).x - scene(ray_hit_position - dn.yyx).x;
+	return normalize(n);
+}
+
+
+void main( )
+{
+    
+    vec3 tot = vec3(0.0);
+
+    // pixel coordinates
+	vec2 uv = -1.0 + 2.0 * vUv;
+
+    vec3 direction = normalize(vec3(uv, 0.0));
+    float cx = 0.*0.01;
+    float cy = 0.*0.01;
+    float cz = 0.*0.01+iTime;
+    vec3 camera_origin = vec3(cx, cy, cz);
+	vec3 lookAt = vec3(cx,cy,cz+9.);
+    
+    vec3 forward = normalize(lookAt-camera_origin); // Forward vector.
+    vec3 right = normalize(vec3(forward.z, 0., -forward.x )); // Right vector... or is it left? Either way, so long as the correct-facing up-vector is produced.
+    vec3 up = normalize(cross(forward,right)); // Cross product the two vectors above to get the up vector.
+
+    float FOV = 0.95;
+
+    vec3 ro = camera_origin;
+    vec3 rd = normalize(forward + FOV*uv.x*right + FOV*uv.y*up);
+
+    vec2 result = raymarch(ro, rd);
+            
+    float fog = pow(1.0 / (1.0 + result.x), 0.3);
+    
+    vec3 materialColor = vec3(0.0, 0.0, 0.0);
+    if(result.y == 1.0)
+    {
+		materialColor = vec3(0.1,0.1,0.1);
+    } else if (result.y == 2.0) {
+		materialColor = vec3(0.4,0.8,0.1);
+    } else if (result.y == 3.0) {
+		materialColor = vec3(0.5*0.5,0.4*0.5,0.4*0.5);
+    }
+    vec3 intersection = ro + rd * result.x;
+    
+    vec3 nrml = normal(intersection, 0.1);
+    float occ = calcAO( intersection, nrml );
+    vec3 light_dir = normalize(vec3(1.0, 1.0, 0.0));
+   	float diffuse = dot(light_dir, nrml);
+
+    diffuse = diffuse * 0.5 + 0.5;
+    
+    vec3 light_color = vec3(1.0, 1.0, 1.0);
+    vec3 ambient_color = vec3(1.0,1.0, 1.0);
+    vec3 diffuseLit = materialColor * (diffuse * light_color + ambient_color);
+    vec3 outColor = diffuseLit*occ*fog;
+	if (result.y == 0.0) outColor = vec3(0.0,0.8,0.9);
+	gl_FragColor = vec4(outColor, 1.0);
+
+}
+
+</script>
+
+<script>
+var camera, scene, renderer;
+var geometry, material, mesh;
+var tuniform, clock;
+
+function init() {
+
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+	camera.position.z = 0.5;
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+	function onWindowResize(){
+	    camera.aspect = window.innerWidth / window.innerHeight;
+	    camera.updateProjectionMatrix();
+	    renderer.setSize( window.innerWidth, window.innerHeight );
+	}
+
+	clock = new THREE.Clock;
+	scene = new THREE.Scene();
+
+	geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+
+	var loader = new THREE.TextureLoader();
+	
+	tuniform = {
+        iTime: 		{ type: 'f', value: 0.1 },
+        iChannel0:  { type: 't', value: loader.load( 'tex1.jpg') },
+        iChannel1:  { type: 't', value: loader.load( 'tex2.jpg' ) },
+    };
+
+	tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
+	tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
+
+	var material = new THREE.ShaderMaterial({
+        uniforms: tuniform,
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+        side:THREE.DoubleSide
+	});
+
+	mesh = new THREE.Mesh( geometry, material );
+	scene.add( mesh );
+
+	var quad = new THREE.Mesh( new THREE.PlaneGeometry(2,2,1,1), material);
+	scene.add(quad);
+
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+//	renderer.setClearColor( 0xaaffff, 1);
+
+	document.body.appendChild( renderer.domElement );
+
+}
+
+function animate() {
+
+	requestAnimationFrame( animate );
+	tuniform.iTime.value += clock.getDelta();
+
+	mesh.rotation.x += 0.01;
+	mesh.rotation.y += 0.02;
+
+	renderer.render( scene, camera );
+
+}
+</script>
+</head>
+
+<body>
+<script>
+	window.addEventListener('load', function() {
+		var audioElement = document.getElementById("audio");
+		console.log(audioElement);
+		init();
+		audioElement.play();
+		console.log("demo start");
+		animate();
+	}, false);
+
+</script>
+<audio id="audio" style = "display:none" preload="auto">
+	<source src="pzlu3.ogg" id="oggSource" type="audio/ogg" />
+	<source src="pzlu3.mp3" id="mp3Source" type="audio/mpeg" />
+</audio>
+</body>
+</html>
