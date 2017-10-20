@@ -215,7 +215,7 @@ void main( )
 <script>
 var camera, scene, renderer;
 var geometry, material, mesh;
-var tuniform, clock;
+var tuniform, clock, audioElement;
 
 function init() {
 
@@ -265,12 +265,15 @@ function init() {
 
 	document.body.appendChild( renderer.domElement );
 
+	audioElement = document.getElementById("audio");
+	console.log(audioElement);
+	audioElement.play();
 }
 
 function animate() {
 
 	requestAnimationFrame( animate );
-	tuniform.iTime.value += clock.getDelta();
+	tuniform.iTime.value = audioElement.currentTime;
 
 	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.02;
@@ -284,10 +287,7 @@ function animate() {
 <body>
 <script>
 	window.addEventListener('load', function() {
-		var audioElement = document.getElementById("audio");
-		console.log(audioElement);
 		init();
-		audioElement.play();
 		console.log("demo start");
 		animate();
 	}, false);
