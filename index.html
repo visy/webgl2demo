@@ -262,12 +262,16 @@ function init() {
 
 	cameraPalaset = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+        cameraPalaset.position.z = 0.5;
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	function onWindowResize(){
-	    camera.aspect = window.innerWidth / window.innerHeight;
-	    camera.updateProjectionMatrix();
+	    cameraPalaset.aspect = window.innerWidth / window.innerHeight;
+	    cameraPalaset.updateProjectionMatrix();
+        cameraTolppa.aspect = window.innerWidth / window.innerHeight;
+        cameraTolppa.updateProjectionMatrix();
+
         screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
 	    renderer.setSize( window.innerWidth, window.innerHeight );
 	}
@@ -368,18 +372,14 @@ function animate() {
 
     if (prevSceneIndex != sceneIndex) {
         prevSceneIndex = sceneIndex;
-
-        if (sceneIndex == 0) camera = cameraPalaset;
-        if (sceneIndex == 1) camera = cameraTolppa;
     }
 
     if (sceneIndex == 0) {
-        camera.position.z = 0.2;
         controls.update();
-    	renderer.render( scenePalaset, camera );
+    	renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
-        camera.position.z = 0.5;
-        renderer.render( sceneTolppa, camera );
+        cameraTolppa.position.z = 0.5;
+        renderer.render( sceneTolppa, cameraTolppa );
 
     }
 
