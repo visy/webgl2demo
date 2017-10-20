@@ -374,6 +374,7 @@ function animate() {
     }
 
     if (sceneIndex == 0) {
+        camera.position.z = 0.2;
         controls.update();
     	renderer.render( scenePalaset, camera );
     } else if (sceneIndex == 1) {
