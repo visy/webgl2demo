@@ -76,12 +76,14 @@ float fOpUnionRound(float a, float b, float r) {
 
 float scene(vec3 pos)
 {
-    vec3 translate = vec3(-0.1, fract(pos.y*clamp(iTime*0.05,0.,1.0)), 0.);
+    vec3 translate1 = vec3(-0.1, fract(pos.y*clamp(iTime*0.05,0.,1.0)), 0.);
+    vec3 translate2 = vec3(0.,distance(1.+abs(cos(pos.x*0.1+cos(iTime*0.1+pos.z+pos.x)*0.5)*10.),pos.y-8.+cos(pos.z)),cos(pos.x+iTime));
+
+    vec3 translate = mix(translate1,translate2,1.0);
 
     vec3 opos = pos - translate;
 
-    float finalDist = sdSphere(cos(opos*0.2),1.1+cos(pos.z*0.01+cos(pos.x*1.1)*0.1)*0.2)*3.91;
-        
+    float finalDist = sdSphere(cos(opos*0.2),1.1+cos(pos.z*0.001+cos(pos.x*1.1)*0.1)*0.2)*3.91;
     return finalDist;
 }
 
@@ -168,15 +170,15 @@ void main() {
     
     vec3 direction = nr(vec3(uv, 0.));
 
-    t = iTime*3.;
+    t = iTime*0.5;
 
     float cz = t*5.9;
     
 
-    float FOV = 1.;
+    float FOV = 10.0;
         
         vec3 camera_origin = vec3(0., 1., cz);
-    vec3 lookAt = vec3(0.,1.,cz+1.);
+    vec3 lookAt = vec3(cos(iTime*0.2)*0.3,1.+sin(iTime*0.25)*1.3,cz+1.);
     
     vec3 forward = nr(lookAt-camera_origin);
     vec3 right = nr(vec3(forward.z, 0., -forward.x ));
@@ -191,7 +193,7 @@ void main() {
     float fog = pow(1. / (1. + result.x), .2);
     
     vec3 icecol = vec3(.6,.6,1.0);
-    vec3 materialColor = vec3(1.3-result.x*.01*.5,.9-cos(result.x*.1)*.5,1.*.5);
+    vec3 materialColor = vec3(1.3-result.x*.01*.5,.9,1.*.5);
     vec3 intersection = ro + rd*result.x;
     
     vec3 nrml = normal(intersection);
@@ -392,7 +394,7 @@ function animate() {
     delta = millis-prevTime;
     sceneTime+=delta;
 
-    if (sceneTime > 15.) {
+    if (sceneTime > 35.) {
         sceneTime = 0;
         
         if (sceneIndex == 1) sceneIndex = 0;
