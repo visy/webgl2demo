@@ -192,7 +192,7 @@ varying vec2 vUv;
 float PI=3.14159;
 
 float rand(vec2 co){
-  return fract(sin(dot(co.xy ,vec2(12.9898+co.y,78.233+co.x))) * 10.*iTime*0.01+43758.5453);
+  return fract(sin(dot(co.xy ,vec2(12.9898+co.y,78.233+co.x))) * 5.*iTime*0.01+43758.5453);
 }
 
 float pix(vec2 uv){
@@ -239,7 +239,8 @@ void main()
     vec3 color = shade(uv);
     if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) discard;
     color.rgb*=texture2D(iChannel1,uv).rgb;
-    gl_FragColor = vec4(color,1.0);
+    color.rgb-=texture2D(iChannel0,uv+iTime*0.2).rgb*0.5;
+    gl_FragColor = vec4(color*vec3(1.1,1.3,0.4),0.5);
 }
 
 </script>
@@ -251,7 +252,7 @@ void main()
 
 var camera;
 var cameraPalaset, cameraTolppa, scenePalaset, sceneTollpa, renderer;
-var geometry, material, mesh;
+var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, controls, sceneIndex, prevSceneIndex;
 var screenQuad;
@@ -260,9 +261,9 @@ var screenQuad;
 
 function init() {
 
-	cameraPalaset = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+	cameraPalaset = new THREE.PerspectiveCamera( 110, window.innerWidth / window.innerHeight, 0.01, 10 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
-        cameraPalaset.position.z = 0.5;
+        cameraPalaset.position.z = 0.2;
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
@@ -302,6 +303,7 @@ function init() {
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
         side:THREE.DoubleSide,
+        transparent: true,
 	});
 
 
@@ -311,9 +313,9 @@ function init() {
         fragmentShader: document.getElementById( 'fragmentTolppa' ).textContent,
     });
 
-	geometry = new THREE.SphereGeometry( 0.2, 64, 64 );
-	mesh = new THREE.Mesh( geometry, materialPala );
-	scenePalaset.add( mesh );
+	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
+	sphereMesh = new THREE.Mesh( geometry, materialPala );
+	scenePalaset.add( sphereMesh );
 
     var path = "horn/";
     var format = '.jpg';
@@ -326,7 +328,7 @@ function init() {
     cube.format = THREE.RGBFormat;
 
     scenePalaset.background = cube;
-    controls.center = mesh.center;
+    controls.center = sphereMesh.center;
 
     screenQuad = new ScreenQuad({
         width: 0.01,
@@ -362,7 +364,7 @@ function animate() {
     delta = millis-prevTime;
     sceneTime+=delta;
 
-    if (sceneTime > 10.) {
+    if (sceneTime > 15.) {
         sceneTime = 0;
         
         if (sceneIndex == 1) sceneIndex = 0;
@@ -376,6 +378,7 @@ function animate() {
 
     if (sceneIndex == 0) {
         controls.update();
+
     	renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
         cameraTolppa.position.z = 0.5;
