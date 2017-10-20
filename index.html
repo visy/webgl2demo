@@ -18,20 +18,19 @@ void main()
     gl_Position = projectionMatrix * mvPosition;
 }
 </script>
-<script id = "fragmentShader" type = "glsl">
+<script id = "fragmentTolppa" type = "glsl">
 uniform float iTime;
-uniform sampler2D iChannel0;
-uniform sampler2D iChannel1;
 varying vec2 vUv;
-#define NEAR_CLIPPING_PLANE 0.0001
-#define FAR_CLIPPING_PLANE 70.0
-#define NUMBER_OF_MARCH_STEPS 500
-#define EPSILON 0.001
-#define DISTANCE_BIAS 0.7
+
+#define NEAR_CLIPPING_PLANE 0.005
+#define FAR_CLIPPING_PLANE 1000.0
+#define NUMBER_OF_MARCH_STEPS 400
+#define EPSILON 0.1
+#define DISTANCE_BIAS 0.2
 
 float sdSphere(vec3 p, float s)
 {
-	return length(p) - (s);
+    return length(p) - (s);
 }
 
 float sdBox( vec3 p, vec3 b )
@@ -65,53 +64,24 @@ float hash11(float p) {
 }
 
 void pR(inout vec2 p, float a) {
-	p = cos(a)*p + sin(a)*vec2(p.y, -p.x);
-}
-
-float fOpUnionRound(float a, float b, float r) {
-	vec2 u = max(vec2(r - a,r - b), vec2(0));
-	return max(r, min (a, b)) - length(u);
+    p = cos(a)*p + sin(a)*vec2(p.y, -p.x);
 }
 
 
 vec2 scene(vec3 pos)
 {
-    vec3 translate = vec3(0.0, 0.0, 0.);
+    vec3 translate = vec3(-0.1, fract(pos.y), 0.);
 
     vec3 opos = pos - translate;
-    vec3 opos_ = opos;
 
-    
-    float vali = 1.5;
-    opos.x = fmod(opos.x, vali) - (vali/2.0); 
-    opos.z = fmod(opos.z, vali) - (vali/2.0); 
-    pR(opos.xz,iTime*2.5+pos.z);
-
-    float distance = sdBox(opos, vec3(0.05,0.9,0.05));
-	vec3 o = opos;
-    pR(opos.yx,1.0);
-    distance = fOpUnionRound(distance,sdBox(opos+vec3(-0.1+0.1*cos(pos.z*10.1),0.0,0.0), vec3(0.01,0.3,0.01)),0.09);
-	opos = o;        
-	float distance2 = sdSphere(opos+vec3(0.0,-0.6,0.0),0.4);
-
-    opos = opos_;
-    float distance3 = sdPlane(opos,vec4(0.0, 5.0, 0.0, 4.5));
- 
-    float finalDist = 0.0;
-    finalDist = min(distance,distance2);
-    finalDist = min(finalDist,distance3);
-
-    float materialID = 0.0;
-    if (finalDist < distance) materialID = 1.0;
-    if (finalDist >= distance2) materialID = 2.0;
-    else if (finalDist < distance3) materialID = 3.0;
-
-    return vec2(finalDist, materialID);
+    float finalDist = sdSphere(cos(opos*0.2),1.1+cos(pos.z*0.01+cos(pos.x*1.1)*0.1)*0.2)*3.91;
+        
+    return vec2(finalDist, 2.0);
 }
 
 float calcAO( in vec3 pos, in vec3 nor )
 {
-	float occ = 0.0;
+    float occ = 0.0;
     float sca = 1.0;
     for( int i=0; i<5; i++ )
     {
@@ -128,53 +98,58 @@ float calcAO( in vec3 pos, in vec3 nor )
 vec2 raymarch(vec3 position, vec3 direction)
 {
     float total_distance = NEAR_CLIPPING_PLANE;
+    float acc = 0.0;
     for(int i = 0 ; i < NUMBER_OF_MARCH_STEPS ; ++i)
     {
-        vec2 result = scene(position + direction * total_distance);
+        vec3 pos = position + direction * total_distance;
+        vec2 result = scene(pos);
+        acc+=cos(result.x*1.)*0.05;
+
         if(result.x < EPSILON)
         {
-            return vec2(total_distance, result.y);
+            return vec2(total_distance, acc);
         }
         
         total_distance += result.x * DISTANCE_BIAS;
         
+        
         if(total_distance > FAR_CLIPPING_PLANE)
             break;
     }
-    return vec2(FAR_CLIPPING_PLANE, 0.0);
+    return vec2(FAR_CLIPPING_PLANE, acc);
 }
 
 vec3 normal(vec3 ray_hit_position, float smoothness)
-{	
-	vec3 n;
-	vec2 dn = vec2(smoothness, 0.0);
-	n.x	= scene(ray_hit_position + dn.xyy).x - scene(ray_hit_position - dn.xyy).x;
-	n.y	= scene(ray_hit_position + dn.yxy).x - scene(ray_hit_position - dn.yxy).x;
-	n.z	= scene(ray_hit_position + dn.yyx).x - scene(ray_hit_position - dn.yyx).x;
-	return normalize(n);
+{   
+    vec3 n;
+    vec2 dn = vec2(smoothness, 0.0);
+    n.x = scene(ray_hit_position + dn.xyy).x - scene(ray_hit_position - dn.xyy).x;
+    n.y = scene(ray_hit_position + dn.yxy).x - scene(ray_hit_position - dn.yxy).x;
+    n.z = scene(ray_hit_position + dn.yyx).x - scene(ray_hit_position - dn.yyx).x;
+    return normalize(n);
 }
 
-
-void main( )
+void main()
 {
     
     vec3 tot = vec3(0.0);
 
     // pixel coordinates
-	vec2 uv = -1.0 + 2.0 * vUv;
+        vec2 uv = -1.0 + 2.0 * vUv;
+
 
     vec3 direction = normalize(vec3(uv, 0.0));
-    float cx = 0.*0.01;
-    float cy = 0.*0.01;
-    float cz = 0.*0.01+iTime;
+    float cx = 0.0;
+    float cy = 0.*0.01+cos(iTime*0.5)*1.;
+    float cz = 0.*0.01+iTime*15.;
     vec3 camera_origin = vec3(cx, cy, cz);
-	vec3 lookAt = vec3(cx,cy,cz+9.);
+    vec3 lookAt = vec3(cx,cy,cz+1.);
     
     vec3 forward = normalize(lookAt-camera_origin); // Forward vector.
     vec3 right = normalize(vec3(forward.z, 0., -forward.x )); // Right vector... or is it left? Either way, so long as the correct-facing up-vector is produced.
     vec3 up = normalize(cross(forward,right)); // Cross product the two vectors above to get the up vector.
 
-    float FOV = 0.95;
+    float FOV = 1.55;
 
     vec3 ro = camera_origin;
     vec3 rd = normalize(forward + FOV*uv.x*right + FOV*uv.y*up);
@@ -184,56 +159,128 @@ void main( )
     float fog = pow(1.0 / (1.0 + result.x), 0.3);
     
     vec3 materialColor = vec3(0.0, 0.0, 0.0);
-    if(result.y == 1.0)
-    {
-		materialColor = vec3(0.1,0.1,0.1);
-    } else if (result.y == 2.0) {
-		materialColor = vec3(0.4,0.8,0.1);
-    } else if (result.y == 3.0) {
-		materialColor = vec3(0.5*0.5,0.4*0.5,0.4*0.5);
-    }
+        materialColor = vec3(1.0-result.x*0.01*0.5,0.9-cos(result.x*0.1)*0.5,1.0*0.5);
     vec3 intersection = ro + rd * result.x;
     
     vec3 nrml = normal(intersection, 0.1);
     float occ = calcAO( intersection, nrml );
-    vec3 light_dir = normalize(vec3(1.0, 1.0, 0.0));
-   	float diffuse = dot(light_dir, nrml);
+    vec3 light_dir = normalize(vec3(0.0, 0.0, -1.0));
+    vec3 ref = reflect( rd, nrml );
+    float dom = smoothstep( -0.1, 0.1, ref.y );
+    float spe = pow(clamp( dot( ref, light_dir ), 0.0, 1.0 ),32.0);
+
+    float diffuse = dot(light_dir, nrml)-result.y*0.3;
 
     diffuse = diffuse * 0.5 + 0.5;
-    
+        
     vec3 light_color = vec3(1.0, 1.0, 1.0);
     vec3 ambient_color = vec3(1.0,1.0, 1.0);
     vec3 diffuseLit = materialColor * (diffuse * light_color + ambient_color);
-    vec3 outColor = diffuseLit*occ*fog;
-	if (result.y == 0.0) outColor = vec3(0.0,0.8,0.9);
-	gl_FragColor = vec4(outColor, 1.0);
+    vec3 outColor = diffuseLit*occ*fog+dom*0.1+spe*0.3;
+    if (result.x >= FAR_CLIPPING_PLANE) outColor = vec3(0.0);
+    gl_FragColor = vec4(outColor, 1.0);
 
 }
 
 </script>
 
+<script id = "fragmentPalaset" type = "glsl">
+uniform float iTime;
+uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
+varying vec2 vUv;
+float PI=3.14159;
+
+float rand(vec2 co){
+  return fract(sin(dot(co.xy ,vec2(12.9898+co.y,78.233+co.x))) * 10.*iTime*0.01+43758.5453);
+}
+
+float pix(vec2 uv){
+    return step(0.5+uv.y*0.01+(cos(uv.x*0.01+10.*iTime*0.5)*0.001),rand(floor(uv)));    
+}
+
+float hm(vec2 uv){
+    uv*=2.0;
+    vec2 nuv = (fract(uv)-0.5)*4.;
+    vec2 pos = sign(nuv)*0.4-distance(nuv.yx,uv.yx)*(cos(10.*iTime+nuv.x*nuv.y)*0.04);
+    
+    float d = length(nuv);
+    
+    float v = pix(uv);
+    
+    if(d>1.){
+    
+    vec2 p1=vec2(pos.x,0.),
+         p2=vec2(0.,pos.y);
+    
+    float v1 = pix(uv+p1),
+          v2 = pix(uv+p2);
+    
+        if(v1==v2){
+            if(v==pix(uv+pos) && v!=v1) v=0.;
+            else v=v1;
+        }
+    }   
+    
+    return mix(pix(uv),v,smoothstep(d,1.0,1.1));
+}
+
+vec3 shade(vec2 uv){
+    uv*=5.;
+    return vec3(hm(uv));
+}
+
+void main()
+{
+    vec2 uv = -1.0 + 2.0 * vUv*3.;
+    if (uv.x < 0.0) uv.x = 0.0-uv.x;
+    if (uv.y < 0.0) uv.y = 0.0-uv.y;
+    
+    vec3 color = shade(uv);
+    if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) discard;
+    color.rgb*=texture2D(iChannel1,uv).rgb;
+    gl_FragColor = vec4(color,1.0);
+}
+
+</script>
+
+<script src = "orbit.js"></script>
+<script src = "quad.js"></script>
+
 <script>
-var camera, scene, renderer;
+
+var camera;
+var cameraPalaset, cameraTolppa, scenePalaset, sceneTollpa, renderer;
 var geometry, material, mesh;
 var tuniform, clock, audioElement;
+var millis, controls, sceneIndex, prevSceneIndex;
+var screenQuad;
+
+// demo init
 
 function init() {
 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
-	camera.position.z = 0.5;
+	cameraPalaset = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+    cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	function onWindowResize(){
 	    camera.aspect = window.innerWidth / window.innerHeight;
 	    camera.updateProjectionMatrix();
+        screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
 	    renderer.setSize( window.innerWidth, window.innerHeight );
 	}
 
-	clock = new THREE.Clock;
-	scene = new THREE.Scene();
+    prevSceneIndex = -1;
+    sceneIndex = 0;
 
-	geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+	clock = new THREE.Clock;
+	scenePalaset = new THREE.Scene();
+    sceneTolppa = new THREE.Scene();
+    controls = new THREE.OrbitControls( cameraPalaset );
+
+    controls.autoRotate = true;
 
 	var loader = new THREE.TextureLoader();
 	
@@ -246,22 +293,50 @@ function init() {
 	tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
 	tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
 
-	var material = new THREE.ShaderMaterial({
+	var materialPala = new THREE.ShaderMaterial({
         uniforms: tuniform,
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-        side:THREE.DoubleSide
+		fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
+        side:THREE.DoubleSide,
 	});
 
-	mesh = new THREE.Mesh( geometry, material );
-	scene.add( mesh );
 
-	var quad = new THREE.Mesh( new THREE.PlaneGeometry(2,2,1,1), material);
-	scene.add(quad);
+    var materialTolppa = new THREE.ShaderMaterial({
+        uniforms: tuniform,
+        vertexShader: document.getElementById( 'vertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'fragmentTolppa' ).textContent,
+    });
+
+	geometry = new THREE.SphereGeometry( 0.2, 64, 64 );
+	mesh = new THREE.Mesh( geometry, materialPala );
+	scenePalaset.add( mesh );
+
+    var path = "horn/";
+    var format = '.jpg';
+    var urls = [
+        path + 'posx' + format, path + 'negx' + format,
+        path + 'posy' + format, path + 'negy' + format,
+        path + 'posz' + format, path + 'negz' + format
+    ];
+    var cube = new THREE.CubeTextureLoader().load( urls );
+    cube.format = THREE.RGBFormat;
+
+    scenePalaset.background = cube;
+    controls.center = mesh.center;
+
+    screenQuad = new ScreenQuad({
+        width: 0.01,
+        height: 0.01,
+    });
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setSize( window.innerWidth, window.innerHeight );
-//	renderer.setClearColor( 0xaaffff, 1);
+	renderer.setClearColor( 0xaaffff, 1);
+
+    screenQuad.setScreenSize( renderer.getSize().width*0.1 , renderer.getSize().height*0.1 );
+    screenQuad.material = materialTolppa;
+
+    sceneTolppa.add(screenQuad);
 
 	document.body.appendChild( renderer.domElement );
 
@@ -270,15 +345,45 @@ function init() {
 	audioElement.play();
 }
 
+var sceneTime = 0;
+var prevTime = 0;
+var delta = 0;
+
 function animate() {
 
 	requestAnimationFrame( animate );
-	tuniform.iTime.value = audioElement.currentTime;
+    millis = audioElement.currentTime;
+	tuniform.iTime.value = millis;
 
-	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.02;
+    delta = millis-prevTime;
+    sceneTime+=delta;
 
-	renderer.render( scene, camera );
+    if (sceneTime > 10.) {
+        sceneTime = 0;
+        
+        if (sceneIndex == 1) sceneIndex = 0;
+        else sceneIndex = 1;   
+    }
+
+
+    if (prevSceneIndex != sceneIndex) {
+        prevSceneIndex = sceneIndex;
+
+        if (sceneIndex == 0) camera = cameraPalaset;
+        if (sceneIndex == 1) camera = cameraTolppa;
+    }
+
+    if (sceneIndex == 0) {
+        camera.position.z = Math.abs(Math.sin(millis*0.5)*0.2);
+        controls.update();
+    	renderer.render( scenePalaset, camera );
+    } else if (sceneIndex == 1) {
+        camera.position.z = 0.5;
+        renderer.render( sceneTolppa, camera );
+
+    }
+
+    prevTime = millis;
 
 }
 </script>
