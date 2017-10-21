@@ -8,7 +8,12 @@ body {
 </style>
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
-
+<script src = "jsRocket.js"></script>
+<script src = "syncdata.js"></script>
+<script src = "synctrack.js"></script>
+<script src = "syncdeviceplayer.js"></script>
+<script src = "syncdeviceclient.js"></script>
+<script src = "syncdevice.js"></script>
 
 <script id = "vertexShader" type = "glsl">
 varying vec2 vUv; 
@@ -22,6 +27,7 @@ void main()
 </script>
 <script id = "fragmentTolppa" type = "glsl">
 uniform float iTime;
+uniform float iAlpha;
 varying vec2 vUv;
 
 float NEAR_CLIPPING_PLANE=.005;
@@ -195,7 +201,7 @@ void main() {
         vec3 ambient_color = light_color;
         vec3 diffuseLit = materialColor * (diffuse * light_color + ambient_color);
         vec3 outColor = diffuseLit*fog+dom*.2+spe*.5;
-        gl_FragColor = vec4(outColor,1.0-distance(0.5,result.x)*.1);
+        gl_FragColor = vec4(outColor,iAlpha*(1.0-distance(0.5,result.x)*.1));
     }
  }
 </script>
@@ -270,8 +276,30 @@ var camera;
 var cameraPalaset, cameraTolppa, scenePalaset, sceneTolppa, renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
-var millis, controls, controls2, sceneIndex, prevSceneIndex;
+var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, composer, materialTolppa;
+var syncReady = false;
+
+var demoMode = true;
+
+var syncDevice,
+    //Beats per minute of your demo tune
+    BPM = 135,
+    //The resolution between two beats, four is usually fine,- eight adds a bit more finer control
+    ROWS_PER_BEAT = 8,
+    //we calculate this now, so we can translate between rows and seconds later on
+    ROW_RATE = BPM / 60 * ROWS_PER_BEAT,
+    //your variable that needs tuning in Rocket
+    scene1_meshx,
+    scene1_meshy,
+    scene1_meshz,
+    scene1_meshr,
+    scene1_mesha,
+    scene2_camerar,
+    scene2_effutime,
+    current_scene,
+    //the current row we're on
+    row = 0;
 
 // demo init
 
@@ -299,14 +327,12 @@ function init() {
 	clock = new THREE.Clock;
 	scenePalaset = new THREE.Scene();
     sceneTolppa = new THREE.Scene();
-    controls = new THREE.OrbitControls( cameraPalaset );
-
-    controls.autoRotate = true;
 
 	var loader = new THREE.TextureLoader();
 	
 	tuniform = {
         iTime: 		{ type: 'f', value: 0.1 },
+        iAlpha:     { type: 'f', value: 1.0 }, 
         iChannel0:  { type: 't', value: loader.load( 'tex1.jpg') },
         iChannel1:  { type: 't', value: loader.load( 'tex2.jpg' ) },
     };
@@ -348,7 +374,6 @@ function init() {
 
     sceneTolppa.background = cube;
     scenePalaset.background = cube;
-    controls.center = sphereMesh.center;
 
     screenQuad = new ScreenQuad({
         width: 1.,
@@ -372,15 +397,74 @@ function init() {
     pass.renderToScreen = true;
     composer.addPass(pass);
 
-
 	document.body.appendChild( renderer.domElement );
 
+    syncDevice = new JSRocket.SyncDevice();
+    if (demoMode) {
+        syncDevice.setConfig({'rocketXML':'sync.rocket'});
+        syncDevice.init("demo");
+    } else {
+        //_syncDevice.setConfig({'socketURL':'ws://192.168.0.100:1339'});
+        syncDevice.init();
+    }
+    syncDevice.on('ready', onSyncReady);
+    syncDevice.on('update', onSyncUpdate);
+    syncDevice.on('play', onPlay);
+    syncDevice.on('pause', onPause);
+
 	audioElement = document.getElementById("audio");
-	console.log(audioElement);
-	audioElement.play();
+    audioElement.addEventListener('canplay', onAudioReady);
+
+}
+
+function onAudioReady() {
+    if(demoMode) {
+        audioElement.play();
+    }
+    render();
+}
+
+function onSyncReady(){
+  //jsRocket is done getting all the info you already have in Rocket, or is done parsing the .rocket file
+
+  //this either adds a track to Rocket, or gets it for you
+  current_scene = syncDevice.getTrack('current_scene');
+  scene1_meshx = syncDevice.getTrack('scene1_meshx');
+  scene1_meshy = syncDevice.getTrack('scene1_meshy');
+  scene1_meshz = syncDevice.getTrack('scene1_meshz');
+  scene1_meshr = syncDevice.getTrack('scene1_meshr');
+  scene1_mesha = syncDevice.getTrack('scene1_mesha');
+
+  scene2_camerar = syncDevice.getTrack('scene2_camerar');
+  scene2_effutime = syncDevice.getTrack('scene2_effutime');
+  syncReady = true;
+}
+
+function onSyncUpdate(newRow){
+  //row is only given if you navigate, or change a value on the row in Rocket
+  //on interpolation change (hit [i]) no row value is sent, as the current there is the upper row of your block
+  if(!isNaN(row)){
+    row = newRow;
+  }
+  audioElement.currentTime = row/ROW_RATE;
+  render();
+}
+
+function onPlay(){
+  //you could also set tune.currentTime here
+  console.log("[onPlay] time in seconds", row / ROW_RATE);
+  audioElement.play();
+  render();
+}
+
+function onPause(){
+  //pause your tune
+  console.log("[onPause] time in seconds", row / ROW_RATE);
+  audioElement.pause();
 }
 
 var sceneTime = 0;
+var sceneStartTime = 0;
 var prevTime = 0;
 var delta = 0;
 
@@ -392,38 +476,44 @@ function easeInOut(t) {
   return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1
 }
 
-function animate() {
+function render() {
+    if (syncReady === false) return;
+    var currentRow = audioElement.currentTime * ROW_RATE;
+            if(audioElement.paused === false) {
+                //otherwise we may jump into a point in the audio where there's
+                //no timeframe, resulting in Rocket setting row 2 and we report
+                //row 1 back - thus Rocket spasming out
+                // this informs Rocket where we are
+                syncDevice.update(currentRow);
+            }
 
-	requestAnimationFrame( animate );
-    millis = audioElement.currentTime;
-	tuniform.iTime.value = millis;
+    millis = (currentRow/ROW_RATE)-sceneStartTime;
 
     delta = millis-prevTime;
     sceneTime+=delta;
-/*
-    if (sceneTime > 35.) {
-        sceneTime = 0;
-        
-        if (sceneIndex == 1) sceneIndex = 0;
-        else sceneIndex = 1;   
-    }
-*/
+
+    sceneIndex = current_scene.getValue(currentRow);
 
     if (prevSceneIndex != sceneIndex) {
         prevSceneIndex = sceneIndex;
+        sceneStartTime = millis;
     }
 
     if (sceneIndex == 0) {
-        controls.update();
-
+        tuniform.iTime.value = scene2_effutime.getValue(currentRow);
+        cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
+        cameraPalaset.position.y = 0.0;
+        sphereMesh.position.z = 0.2;
     	renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
 
         var animTime = clamp(sceneTime*0.1,0.0,1.0);
-        sphereMesh2.position.x = THREE.Math.lerp(-0.37,0.0,easeInOut(animTime));
-        sphereMesh2.position.y = THREE.Math.lerp(6.9,0.0,easeInOut(animTime));
-        sphereMesh2.position.z = THREE.Math.lerp(10.5,0.0,easeInOut(animTime));
-        sphereMesh2.rotation.y = THREE.Math.lerp(0.0,-1.5,easeInOut(animTime));
+        sphereMesh2.position.x = scene1_meshx.getValue(currentRow);
+        sphereMesh2.position.y = scene1_meshy.getValue(currentRow);
+        sphereMesh2.position.z = scene1_meshz.getValue(currentRow);
+        sphereMesh2.rotation.y = scene1_meshr.getValue(currentRow);
+        tuniform.iTime.value = millis;
+        tuniform.iAlpha.value = scene1_mesha.getValue(currentRow);
         materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
 
         cameraTolppa.lookAt(new THREE.Vector3(0.0,0.05,0.5));
@@ -435,6 +525,8 @@ function animate() {
     }
 
     prevTime = millis;
+    if (audioElement.paused === false) window.requestAnimationFrame(render);
+
 
 }
 </script>
@@ -445,7 +537,6 @@ function animate() {
 	window.addEventListener('load', function() {
 		init();
 		console.log("demo start");
-		animate();
 	}, false);
 
 </script>
