@@ -277,7 +277,7 @@ var cameraPalaset, cameraTolppa, scenePalaset, sceneTolppa, renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, composer, materialTolppa;
+var screenQuad, sphereMesh2, composer, materialTolppa, scenePass;
 var syncReady = false;
 
 var demoMode = true;
@@ -392,10 +392,15 @@ function init() {
     sceneTolppa.add(sphereMesh2);
 
     composer = new POSTPROCESSING.EffectComposer(renderer);
-    composer.addPass(new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa));
+    scenePass = new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa)
+    composer.addPass(scenePass);
     var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
+    pass.renderToScreen = false;
+    composer.addPass(pass);
+    var pass = new POSTPROCESSING.FilmPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = true;
     composer.addPass(pass);
+
 
 	document.body.appendChild( renderer.domElement );
 
@@ -500,12 +505,17 @@ function render() {
     }
 
     if (sceneIndex == 0) {
+        scenePass.camera = cameraPalaset;
+        scenePass.scene = scenePalaset;
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
         cameraPalaset.position.y = 0.0;
         sphereMesh.position.z = 0.2;
-    	renderer.render( scenePalaset, cameraPalaset );
+        composer.render(clock.getDelta());
+//    	renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
+        scenePass.camera = cameraTolppa;
+        scenePass.scene = sceneTolppa;
 
         var animTime = clamp(sceneTime*0.1,0.0,1.0);
         sphereMesh2.position.x = scene1_meshx.getValue(currentRow);
