@@ -9,6 +9,7 @@ body {
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
 <script src = "ColladaLoader.js"></script>
+<script src = "GLTFLoader.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
 <script src = "syncdata.js"></script>
@@ -274,6 +275,8 @@ void main()
 
 <script>
 
+// Rose by cosmicollie is licensed under CC Attribution-NonCommercial
+
 var camera;
 var cameraPalaset, cameraTolppa, scenePalaset, sceneTolppa, renderer;
 var geometry, material, sphereMesh;
@@ -281,6 +284,7 @@ var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, composerTolppa, composerPalaset, materialTolppa, scenePass;
 var syncReady = false;
+var roseclone;
 
 var demoMode = true;
 
@@ -359,6 +363,58 @@ function init() {
         side:THREE.DoubleSide,
     });
 
+    var loadergltf = new THREE.GLTFLoader();
+
+    // Load a glTF resource
+    loadergltf.load(
+        // resource URL
+        'rose.gltf',
+        // called when the resource is loaded
+        function ( gltf ) {
+
+
+            gltf.scene.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+
+                    roseclone = child.clone();
+                    roseclone.position.z = 1.0;
+                    roseclone.position.y = -0.3;
+                    roseclone.rotation.x = -2.;
+                    roseclone.scale.set(0.2,0.2,0.2);
+                    scenePalaset.add(roseclone);
+
+                    child.position.z = 4.9;
+                    child.rotation.x = -0.9;
+                    child.rotation.y = 1.5;
+                    child.rotation.z = 2.5;
+                    child.position.y = -2.2;
+                    child.position.x = -0.5;
+                    child.scale.set(0.2,0.2,0.2);
+                    sceneTolppa.add( child );                    
+                }
+            });
+/*
+            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
+            gltf.scene; // THREE.Scene
+            gltf.scenes; // Array&lt;THREE.Scene&gt;
+            gltf.cameras; // Array&lt;THREE.Camera&gt;
+*/
+        },
+        // called when loading is in progresses
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        // called when loading has errors
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+
+
 	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
 	sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
@@ -376,33 +432,37 @@ function init() {
     cube.format = THREE.RGBFormat;
 
 
+    var path = "horn/";
+    var format = '.jpg';
+    var urls = [
+        path + 'posx' + format, path + 'negx' + format,
+        path + 'posy' + format, path + 'negy' + format,
+        path + 'posz' + format, path + 'negz' + format
+    ];
+    var cube2 = new THREE.CubeTextureLoader().load( urls );
+    cube2.format = THREE.RGBFormat;
+
     sceneTolppa.background = cube;
-    scenePalaset.background = cube;
+    scenePalaset.background = cube2;
 
     var spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.position.set(0, 20, -5);
-    spotLight.castShadow = true;
-    spotLight.intensity = 1.0;
-    spotLight.shadowMapWidth = 1024; // default is 512
-    spotLight.shadowMapHeight = 1024; // default is 512
+    spotLight.position.set(0, 0, -5);
+    spotLight.castShadow = false;
+    spotLight.intensity = 0.5;
     scenePalaset.add(spotLight);
 
     var spotLight2 = new THREE.SpotLight(0xffffff);
     spotLight2.position.set(0, 1, 5);
     spotLight2.castShadow = false;
-    spotLight2.intensity = 0.5;
+    spotLight2.intensity = 0.2;
     scenePalaset.add(spotLight2);
 
-    var planeGeometry = new THREE.PlaneGeometry( 2000, 2000 );
-    planeGeometry.rotateX( - Math.PI / 2 );
+    var spotLight2 = new THREE.SpotLight(0xffffff);
+    spotLight2.position.set(1, 5, -100);
+    spotLight2.castShadow = false;
+    spotLight2.intensity = 2.0;
+    sceneTolppa.add(spotLight2);
 
-    var planeMaterial = new THREE.ShadowMaterial();
-    planeMaterial.opacity = 0.2;
-
-    var plane = new THREE.Mesh( planeGeometry, planeMaterial );
-    plane.position.y = -1;
-    plane.receiveShadow = true;
-    scenePalaset.add( plane );
 
     var objloader = new THREE.ColladaLoader();
 
@@ -411,7 +471,17 @@ function init() {
         function ( object ) {
             object.scene.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
-                    child.material = new THREE.MeshLambertMaterial({color: 0x9E885B});
+
+                    child.material = new THREE.MeshPhysicalMaterial( {
+                    map: null,
+                    color: 0x9E885B,
+                    metalness: 0.0,
+                    roughness: 0.5,
+                    opacity: 1.0,
+                    envMapIntensity: 5,
+                    premultipliedAlpha: true
+                    } );
+
                     child.scale.set(0.1,0.1,0.1);
                     child.position.x = -0.1;
                     child.position.y = -1.0;
@@ -455,8 +525,8 @@ function init() {
     composerTolppa.addPass(pass);
 
     composerPalaset = new POSTPROCESSING.EffectComposer(renderer);
-    scenePass = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
-    composerPalaset.addPass(scenePass);
+    var scenePass2 = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
+    composerPalaset.addPass(scenePass2);
     var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
     pass.renderToScreen = true;
     composerPalaset.addPass(pass);
@@ -564,10 +634,9 @@ function render() {
     }
 
     if (sceneIndex == 0) {
-        scenePass.camera = cameraPalaset;
-        scenePass.scene = scenePalaset;
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
         cameraPalaset.lookAt(sphereMesh.position);
+        if (roseclone) roseclone.rotation.z += delta*0.5;
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
 
         sphereMesh.position.x = scene1_meshx.getValue(currentRow);
