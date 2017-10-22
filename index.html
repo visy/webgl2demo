@@ -8,6 +8,8 @@ body {
 </style>
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
+<script src = "ColladaLoader.js"></script>
+<script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
 <script src = "syncdata.js"></script>
 <script src = "synctrack.js"></script>
@@ -277,7 +279,7 @@ var cameraPalaset, cameraTolppa, scenePalaset, sceneTolppa, renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, composer, materialTolppa, scenePass;
+var screenQuad, sphereMesh2, composerTolppa, composerPalaset, materialTolppa, scenePass;
 var syncReady = false;
 
 var demoMode = true;
@@ -359,6 +361,8 @@ function init() {
 
 	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
 	sphereMesh = new THREE.Mesh( geometry, materialPala );
+    sphereMesh.receiveShadow = false;
+    sphereMesh.castShadow = false;
 	scenePalaset.add( sphereMesh );
 
     var path = "bud/";
@@ -375,6 +379,53 @@ function init() {
     sceneTolppa.background = cube;
     scenePalaset.background = cube;
 
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 20, -5);
+    spotLight.castShadow = true;
+    spotLight.intensity = 1.0;
+    spotLight.shadowMapWidth = 1024; // default is 512
+    spotLight.shadowMapHeight = 1024; // default is 512
+    scenePalaset.add(spotLight);
+
+    var spotLight2 = new THREE.SpotLight(0xffffff);
+    spotLight2.position.set(0, 1, 5);
+    spotLight2.castShadow = false;
+    spotLight2.intensity = 0.5;
+    scenePalaset.add(spotLight2);
+
+    var planeGeometry = new THREE.PlaneGeometry( 2000, 2000 );
+    planeGeometry.rotateX( - Math.PI / 2 );
+
+    var planeMaterial = new THREE.ShadowMaterial();
+    planeMaterial.opacity = 0.2;
+
+    var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+    plane.position.y = -1;
+    plane.receiveShadow = true;
+    scenePalaset.add( plane );
+
+    var objloader = new THREE.ColladaLoader();
+
+    objloader.load(
+        'tower.dae',
+        function ( object ) {
+            object.scene.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                    child.material = new THREE.MeshLambertMaterial({color: 0x9E885B});
+                    child.scale.set(0.1,0.1,0.1);
+                    child.position.x = -0.1;
+                    child.position.y = -1.0;
+                    child.position.z = -2.8;
+                    child.rotation.x = -1.6;
+                    child.castShadow = true;
+                    scenePalaset.add( child );
+
+                }
+            } );
+
+        }
+    );
+
     screenQuad = new ScreenQuad({
         width: 1.,
         height: 1.,
@@ -383,6 +434,8 @@ function init() {
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.setClearColor( 0x000000, 1);
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFSoftShadowMap; 
 
     screenQuad.setScreenSize( renderer.getSize().width , renderer.getSize().height );
     screenQuad.material = materialTolppa;
@@ -391,16 +444,22 @@ function init() {
 
     sceneTolppa.add(sphereMesh2);
 
-    composer = new POSTPROCESSING.EffectComposer(renderer);
+    composerTolppa = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa)
-    composer.addPass(scenePass);
+    composerTolppa.addPass(scenePass);
     var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = false;
-    composer.addPass(pass);
+    composerTolppa.addPass(pass);
     var pass = new POSTPROCESSING.FilmPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = true;
-    composer.addPass(pass);
+    composerTolppa.addPass(pass);
 
+    composerPalaset = new POSTPROCESSING.EffectComposer(renderer);
+    scenePass = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
+    composerPalaset.addPass(scenePass);
+    var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
+    pass.renderToScreen = true;
+    composerPalaset.addPass(pass);
 
 	document.body.appendChild( renderer.domElement );
 
@@ -508,10 +567,18 @@ function render() {
         scenePass.camera = cameraPalaset;
         scenePass.scene = scenePalaset;
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
+        cameraPalaset.lookAt(sphereMesh.position);
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
-        cameraPalaset.position.y = 0.0;
-        sphereMesh.position.z = 0.2;
-        composer.render(clock.getDelta());
+
+        sphereMesh.position.x = scene1_meshx.getValue(currentRow);
+        sphereMesh.position.y = scene1_meshy.getValue(currentRow);
+        sphereMesh.position.z = scene1_meshz.getValue(currentRow);
+/*
+        sphereMesh.position.z = 1.5;
+        sphereMesh.position.y = 1.2;
+        sphereMesh.position.x = -0.05;
+*/
+        composerPalaset.render(clock.getDelta());
 //    	renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
         scenePass.camera = cameraTolppa;
@@ -527,9 +594,11 @@ function render() {
         materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
 
         cameraTolppa.lookAt(new THREE.Vector3(0.0,0.05,0.5));
-        cameraTolppa.rotation.y = 0.0+Math.sin(millis*0.5)*0.1;
-        cameraTolppa.position.y = Math.cos(millis*0.4)*.01;
-        composer.render(clock.getDelta());
+
+        cameraTolppa.position.x = noise.perlin3(millis,millis,millis)*0.004;
+        cameraTolppa.position.y = noise.perlin3(millis,millis,millis)*0.002;
+        cameraTolppa.position.z = noise.perlin3(millis,millis,millis)*0.003;
+        composerTolppa.render(clock.getDelta());
         //renderer.render( sceneTolppa, cameraTolppa );
 
     }
