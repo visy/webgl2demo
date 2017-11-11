@@ -288,7 +288,7 @@ var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, poliis;
+var roseclone, poliis, bokeh;
 
 var spotLight_tori2, spotLight_tori1;
 
@@ -310,6 +310,9 @@ var syncDevice,
     scene2_camerar,
     scene2_effutime,
     current_scene,
+    scene_aperture,
+    scene_dof,
+    scene_focus,
     //the current row we're on
     row = 0;
 
@@ -606,16 +609,11 @@ function init() {
     composerTori = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
     composerTori.addPass(scenePass);
-    var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
-    pass.renderToScreen = false;
-    composerTolppa.addPass(pass);
-    var bokehSettings = {
-        focus : 1.0, aperture : 5.0,  maxblur : 1.0
-    }
 
-    var bokehPass =  new POSTPROCESSING.BokehPass( sceneTori, cameraTori, bokehSettings );
+    var bokehPass =  new POSTPROCESSING.BokehPass(cameraTori);
     bokehPass.renderToScreen = true;
     composerTori.addPass(bokehPass);
+    bokeh = bokehPass;
 
 	document.body.appendChild( renderer.domElement );
 
@@ -658,6 +656,11 @@ function onSyncReady(){
 
   scene2_camerar = syncDevice.getTrack('scene2_camerar');
   scene2_effutime = syncDevice.getTrack('scene2_effutime');
+
+  scene_aperture = syncDevice.getTrack('aperture');
+  scene_dof = syncDevice.getTrack('dof');
+  scene_focus = syncDevice.getTrack('focus');
+
   syncReady = true;
 }
 
@@ -766,7 +769,11 @@ function render() {
                 spotLight_tori2.intensity = 1.0;
         spotLight_tori1.intensity += Math.cos(millis*10.)*0.1;
         spotLight_tori2.intensity -= Math.sin(millis*12.)*0.1;
+        bokeh.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
         composerTori.render(clock.getDelta());
+
 
     }
 
