@@ -19,7 +19,11 @@ body {
 <script src = "syncdevice.js"></script>
 
 <script id = "vertexShader" type = "glsl">
+
 varying vec2 vUv; 
+
+// models by cosmicollie & Juha M (from Sketchfab)
+
 void main()
 {
     vUv = uv;
@@ -278,13 +282,15 @@ void main()
 // Rose by cosmicollie is licensed under CC Attribution-NonCommercial
 
 var camera;
-var cameraPalaset, cameraTolppa, scenePalaset, sceneTolppa, renderer;
+var cameraPalaset, cameraTolppa, cameraTori, scenePalaset, sceneTolppa, sceneTori, renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, composerTolppa, composerPalaset, materialTolppa, scenePass;
+var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone;
+var roseclone, poliis;
+
+var spotLight_tori2, spotLight_tori1;
 
 var demoMode = true;
 
@@ -314,6 +320,7 @@ function init() {
 	cameraPalaset = new THREE.PerspectiveCamera( 110, window.innerWidth / window.innerHeight, 0.01, 10 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
+    cameraTori = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
@@ -322,6 +329,8 @@ function init() {
 	    cameraPalaset.updateProjectionMatrix();
         cameraTolppa.aspect = window.innerWidth / window.innerHeight;
         cameraTolppa.updateProjectionMatrix();
+        cameraTori.aspect = window.innerWidth / window.innerHeight;
+        cameraTori.updateProjectionMatrix();
 
         screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
 	    renderer.setSize( window.innerWidth, window.innerHeight );
@@ -333,6 +342,7 @@ function init() {
 	clock = new THREE.Clock;
 	scenePalaset = new THREE.Scene();
     sceneTolppa = new THREE.Scene();
+    sceneTori = new THREE.Scene();
 
 	var loader = new THREE.TextureLoader();
 	
@@ -415,6 +425,55 @@ function init() {
     );
 
 
+    var loadergltf2 = new THREE.GLTFLoader();
+
+    // Load a glTF resource
+    loadergltf2.load(
+        // resource URL
+        'torip.gltf',
+        // called when the resource is loaded
+        function ( gltf ) {
+
+
+            gltf.scene.traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+
+                    child.position.x = 0.0;
+                    child.position.y = -20.0;
+                    child.position.z = -25.0;
+
+                    child.rotation.x = -1.25;
+                    child.rotation.y = 0.0;
+                    child.rotation.z = 1.0;
+
+                    child.scale.set(1.0,1.0,1.0);
+                    sceneTori.add( child );            
+
+
+                    poliis = child;        
+                }
+            });
+/*
+            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
+            gltf.scene; // THREE.Scene
+            gltf.scenes; // Array&lt;THREE.Scene&gt;
+            gltf.cameras; // Array&lt;THREE.Camera&gt;
+*/
+        },
+        // called when loading is in progresses
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        // called when loading has errors
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+
 	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
 	sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
@@ -444,6 +503,7 @@ function init() {
 
     sceneTolppa.background = cube;
     scenePalaset.background = cube2;
+    sceneTori.background = cube2;
 
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, -5);
@@ -462,6 +522,18 @@ function init() {
     spotLight2.castShadow = false;
     spotLight2.intensity = 2.0;
     sceneTolppa.add(spotLight2);
+
+    spotLight_tori1 = new THREE.SpotLight(0xffffff);
+    spotLight_tori1.position.set(1, 1, 5);
+    spotLight_tori1.castShadow = false;
+    spotLight_tori1.intensity = 1.0;
+    sceneTori.add(spotLight_tori1);
+
+    spotLight_tori2 = new THREE.SpotLight(0xffffff);
+    spotLight_tori2.position.set(0, 1, 5);
+    spotLight_tori2.castShadow = false;
+    spotLight_tori2.intensity = 1.0;
+    sceneTori.add(spotLight_tori2);
 
 
     var objloader = new THREE.ColladaLoader();
@@ -531,6 +603,11 @@ function init() {
     pass.renderToScreen = true;
     composerPalaset.addPass(pass);
 
+    composerTori = new POSTPROCESSING.EffectComposer(renderer);
+    scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
+    composerTori.addPass(scenePass);
+    composerTori.addPass(pass);
+
 	document.body.appendChild( renderer.domElement );
 
     syncDevice = new JSRocket.SyncDevice();
@@ -546,9 +623,10 @@ function init() {
     syncDevice.on('play', onPlay);
     syncDevice.on('pause', onPause);
 
-	audioElement = document.getElementById("audio");
-    audioElement.addEventListener('canplay', onAudioReady);
+    audioElement = document.getElementById("audio");
+    audioElement.oncanplaythrough = onAudioReady;
 
+    setTimeout(function() { audioElement.load(); }, 1000);
 }
 
 function onAudioReady() {
@@ -633,6 +711,8 @@ function render() {
         sceneStartTime = millis;
     }
 
+
+    sceneIndex = 2;
     if (sceneIndex == 0) {
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
         cameraPalaset.lookAt(sphereMesh.position);
@@ -669,6 +749,19 @@ function render() {
         cameraTolppa.position.z = noise.perlin3(millis,millis,millis)*0.003;
         composerTolppa.render(clock.getDelta());
         //renderer.render( sceneTolppa, cameraTolppa );
+
+    } else if (sceneIndex == 2) {
+        scenePass.camera = cameraTori;
+        scenePass.scene = sceneTori;
+        poliis.rotation.z = Math.abs(Math.cos(millis)*2.5)+Math.sin(millis*1.)*0.1;
+        cameraTori.position.x=-2.5;
+        cameraTori.position.y=0.2;
+        cameraTori.position.z=-2.+Math.cos(millis)*3.;
+        spotLight_tori1.intensity = 1.0;
+                spotLight_tori2.intensity = 1.0;
+        spotLight_tori1.intensity += Math.cos(millis*10000.)*0.1;
+        spotLight_tori2.intensity -= Math.sin(millis*12000.)*0.1;
+        composerTori.render(clock.getDelta());
 
     }
 

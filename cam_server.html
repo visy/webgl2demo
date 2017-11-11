@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+</head>
+<body>
+<script>
+function keepalive() {
+        if (window.currentConn) {
+                window.currentConn.send("server ping");
+                console.log("sending ping");
+        }
+}
+
+window.onload = function() {
+        var peer = new Peer({key: 'a5k9m2n9k1vpldi'});
+        peer.on('open', function(id) {
+                console.log('My peer ID is: ' + id);
+        });
+
+//        var conn = peer.connect(''); // server peer id
+        window.setInterval(keepalive, 1000);
+
+        peer.on('connection', function(conn) { 
+                console.log("client connected: ", conn);
+                window.currentConn = conn;
+                conn.on('data', function(data) {
+                        console.log('Received: ', data);
+                });
+
+        });
+
+};
+
+</script>
+</body>
+</html>
