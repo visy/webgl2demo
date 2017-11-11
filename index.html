@@ -388,7 +388,7 @@ function init() {
 
                     roseclone = child.clone();
                     roseclone.position.z = 1.0;
-                    roseclone.position.y = -0.3;
+                    roseclone.position.y = -0.6;
                     roseclone.rotation.x = -2.;
                     roseclone.scale.set(0.2,0.2,0.2);
                     scenePalaset.add(roseclone);
@@ -478,7 +478,7 @@ function init() {
 	sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
     sphereMesh.castShadow = false;
-	scenePalaset.add( sphereMesh );
+//	scenePalaset.add( sphereMesh );
 
     var path = "bud/";
     var format = '.jpg';
@@ -523,13 +523,13 @@ function init() {
     spotLight2.intensity = 2.0;
     sceneTolppa.add(spotLight2);
 
-    spotLight_tori1 = new THREE.SpotLight(0xffffff);
+    spotLight_tori1 = new THREE.SpotLight(0xffaaaa);
     spotLight_tori1.position.set(1, 1, 5);
     spotLight_tori1.castShadow = false;
     spotLight_tori1.intensity = 1.0;
     sceneTori.add(spotLight_tori1);
 
-    spotLight_tori2 = new THREE.SpotLight(0xffffff);
+    spotLight_tori2 = new THREE.SpotLight(0xaaffff);
     spotLight_tori2.position.set(0, 1, 5);
     spotLight_tori2.castShadow = false;
     spotLight_tori2.intensity = 1.0;
@@ -606,6 +606,13 @@ function init() {
     composerTori = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
     composerTori.addPass(scenePass);
+    var bokehSettings = {
+        focus : 500.0, aperture : 5.025,  maxblur : 1.0,
+        width: window.innerWidth, height : window.innerHeight
+    }
+
+    var bokehPass =  new POSTPROCESSING.BokehPass( sceneTori, cameraTori, bokehSettings );
+    bokehPass.renderToScreen = true;
     composerTori.addPass(pass);
 
 	document.body.appendChild( renderer.domElement );
@@ -711,17 +718,12 @@ function render() {
         sceneStartTime = millis;
     }
 
-
-    sceneIndex = 2;
     if (sceneIndex == 0) {
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
         cameraPalaset.lookAt(sphereMesh.position);
         if (roseclone) roseclone.rotation.z += delta*0.5;
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
 
-        sphereMesh.position.x = scene1_meshx.getValue(currentRow);
-        sphereMesh.position.y = scene1_meshy.getValue(currentRow);
-        sphereMesh.position.z = scene1_meshz.getValue(currentRow);
 /*
         sphereMesh.position.z = 1.5;
         sphereMesh.position.y = 1.2;
@@ -753,14 +755,15 @@ function render() {
     } else if (sceneIndex == 2) {
         scenePass.camera = cameraTori;
         scenePass.scene = sceneTori;
-        poliis.rotation.z = Math.abs(Math.cos(millis)*2.5)+Math.sin(millis*1.)*0.1;
+        poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
         cameraTori.position.x=-2.5;
-        cameraTori.position.y=0.2;
+        cameraTori.position.y=-20.5+millis*1.5;
         cameraTori.position.z=-2.+Math.cos(millis)*3.;
+        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
         spotLight_tori1.intensity = 1.0;
                 spotLight_tori2.intensity = 1.0;
-        spotLight_tori1.intensity += Math.cos(millis*10000.)*0.1;
-        spotLight_tori2.intensity -= Math.sin(millis*12000.)*0.1;
+        spotLight_tori1.intensity += Math.cos(millis*10.)*0.1;
+        spotLight_tori2.intensity -= Math.sin(millis*12.)*0.1;
         composerTori.render(clock.getDelta());
 
     }
