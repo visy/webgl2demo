@@ -23,8 +23,6 @@ body {
 
 varying vec2 vUv; 
 
-// models by cosmicollie & Juha M (from Sketchfab)
-
 void main()
 {
     vUv = uv;
@@ -281,13 +279,16 @@ void main()
 <script>
 
 // Rose by cosmicollie is licensed under CC Attribution-NonCommercial
+// polliisi by Juha M (from Sketchfab)
+// castle & time fuse by Skoklosters slott Time Fuse is licensed under CC Attribution-ShareAlike
 
 var camera;
-var cameraPalaset, cameraTolppa, cameraTori, scenePalaset, sceneTolppa, sceneTori, renderer;
+var cameraPalaset, cameraTolppa, cameraTori, cameraHall, scenePalaset, sceneTolppa, sceneTori, sceneHall;
+var renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, materialTolppa, scenePass;
+var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, composerHall, materialTolppa, scenePass;
 var syncReady = false;
 var roseclone, poliis, bokeh, bokehrose;
 
@@ -317,66 +318,22 @@ var syncDevice,
     //the current row we're on
     row = 0;
 
+
+var gltfcount = 0;
+var allmodelscount = 4;
+var audioInited = false;
 // demo init
 
-function init() {
+function addGLTFCount() {
+    gltfcount++;
+    if (gltfcount >= allmodelscount && !audioInited) {
+        audioInited = true;
+        audioElement.oncanplaythrough = onAudioReady;
+        setTimeout(function() { audioElement.load(); }, 100);
+    }
+}
 
-	cameraPalaset = new THREE.PerspectiveCamera( 110, window.innerWidth / window.innerHeight, 0.01, 10 );
-    cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
-        cameraPalaset.position.z = 0.2;
-    cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
-
-	window.addEventListener( 'resize', onWindowResize, false );
-
-	function onWindowResize(){
-	    cameraPalaset.aspect = window.innerWidth / window.innerHeight;
-	    cameraPalaset.updateProjectionMatrix();
-        cameraTolppa.aspect = window.innerWidth / window.innerHeight;
-        cameraTolppa.updateProjectionMatrix();
-        cameraTori.aspect = window.innerWidth / window.innerHeight;
-        cameraTori.updateProjectionMatrix();
-
-        screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
-	    renderer.setSize( window.innerWidth, window.innerHeight );
-	}
-
-    prevSceneIndex = -1;
-    sceneIndex = 1;
-
-	clock = new THREE.Clock;
-	scenePalaset = new THREE.Scene();
-    sceneTolppa = new THREE.Scene();
-    sceneTori = new THREE.Scene();
-
-	var loader = new THREE.TextureLoader();
-	
-	tuniform = {
-        iTime: 		{ type: 'f', value: 0.1 },
-        iAlpha:     { type: 'f', value: 1.0 }, 
-        iChannel0:  { type: 't', value: loader.load( 'tex1.jpg') },
-        iChannel1:  { type: 't', value: loader.load( 'tex2.jpg' ) },
-    };
-
-	tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
-	tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
-
-	var materialPala = new THREE.ShaderMaterial({
-        uniforms: tuniform,
-		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
-        side:THREE.DoubleSide,
-        transparent: true,
-	});
-
-
-    materialTolppa = new THREE.ShaderMaterial({
-        uniforms: tuniform,
-        vertexShader: document.getElementById( 'vertexShader' ).textContent,
-        fragmentShader: document.getElementById( 'fragmentTolppa' ).textContent,
-        transparent: true,
-        side:THREE.DoubleSide,
-    });
-
+function loadModels() {
     var loadergltf = new THREE.GLTFLoader();
 
     // Load a glTF resource
@@ -385,7 +342,6 @@ function init() {
         'rose.gltf',
         // called when the resource is loaded
         function ( gltf ) {
-
 
             gltf.scene.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
@@ -407,6 +363,9 @@ function init() {
                     sceneTolppa.add( child );                    
                 }
             });
+
+            addGLTFCount();
+
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
             gltf.scene; // THREE.Scene
@@ -438,9 +397,7 @@ function init() {
         // called when the resource is loaded
         function ( gltf ) {
 
-
             gltf.scene.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
 
                     child.position.x = 0.0;
                     child.position.y = -20.0;
@@ -465,8 +422,10 @@ function init() {
                     stiffness: 0.1,
                     matchRotation: true
                 });   
-                }
             });
+
+            addGLTFCount();
+
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
             gltf.scene; // THREE.Scene
@@ -487,6 +446,157 @@ function init() {
 
         }
     );
+
+
+    var loadergltf3 = new THREE.GLTFLoader();
+
+    // Load a glTF resource
+    loadergltf3.load(
+        // resource URL
+        'the_king_s_hall/scene.gltf',
+        // called when the resource is loaded
+        function ( gltf ) {
+
+            gltf.scene.traverse( function ( child ) {
+//                if ( child instanceof THREE.Mesh ) {
+                    sceneHall.add( child );            
+
+//                }
+            });
+
+            addGLTFCount();
+
+/*
+            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
+            gltf.scene; // THREE.Scene
+            gltf.scenes; // Array&lt;THREE.Scene&gt;
+            gltf.cameras; // Array&lt;THREE.Camera&gt;
+*/
+        },
+        // called when loading is in progresses
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        // called when loading has errors
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+
+    var loadergltf4 = new THREE.GLTFLoader();
+
+    // Load a glTF resource
+    loadergltf4.load(
+        // resource URL
+        'time_fuse/scene.gltf',
+        // called when the resource is loaded
+        function ( gltf ) {
+
+            gltf.scene.traverse( function ( child ) {
+//                if ( child instanceof THREE.Mesh ) {
+                    child.position.x -= 2.;
+                    child.position.y -= 0.;
+                    child.position.z -= 24.;
+                    child.rotation.x = 1.;
+                    scenePalaset.add( child );            
+//                    child.visible = false;
+//                }
+            });
+
+            addGLTFCount();
+
+/*
+            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
+            gltf.scene; // THREE.Scene
+            gltf.scenes; // Array&lt;THREE.Scene&gt;
+            gltf.cameras; // Array&lt;THREE.Camera&gt;
+*/
+        },
+        // called when loading is in progresses
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        // called when loading has errors
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+
+}
+
+function init() {
+
+	cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 10 );
+    cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+        cameraPalaset.position.z = 0.2;
+    cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+	function onWindowResize(){
+	    cameraPalaset.aspect = window.innerWidth / window.innerHeight;
+	    cameraPalaset.updateProjectionMatrix();
+        cameraTolppa.aspect = window.innerWidth / window.innerHeight;
+        cameraTolppa.updateProjectionMatrix();
+        cameraTori.aspect = window.innerWidth / window.innerHeight;
+        cameraTori.updateProjectionMatrix();
+
+        cameraHall.aspect = window.innerWidth / window.innerHeight;
+        cameraHall.updateProjectionMatrix();
+
+        screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
+	    renderer.setSize( window.innerWidth, window.innerHeight );
+	}
+
+    prevSceneIndex = -1;
+    sceneIndex = 1;
+
+	clock = new THREE.Clock;
+	scenePalaset = new THREE.Scene();
+    sceneTolppa = new THREE.Scene();
+    sceneTori = new THREE.Scene();
+    sceneHall = new THREE.Scene();
+
+	var loader = new THREE.TextureLoader();
+	
+	tuniform = {
+        iTime: 		{ type: 'f', value: 0.1 },
+        iAlpha:     { type: 'f', value: 1.0 }, 
+        iChannel0:  { type: 't', value: loader.load( 'tex1.jpg') },
+        iChannel1:  { type: 't', value: loader.load( 'tex2.jpg' ) },
+    };
+
+	tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
+	tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
+
+	var materialPala = new THREE.ShaderMaterial({
+        uniforms: tuniform,
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
+        side:THREE.DoubleSide,
+        transparent: true,
+	});
+
+
+    materialTolppa = new THREE.ShaderMaterial({
+        uniforms: tuniform,
+        vertexShader: document.getElementById( 'vertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'fragmentTolppa' ).textContent,
+        transparent: true,
+        side:THREE.DoubleSide,
+    });
+
+
+    loadModels();
 
 	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
 	sphereMesh = new THREE.Mesh( geometry, materialPala );
@@ -531,6 +641,12 @@ function init() {
     spotLight2.intensity = 0.2;
     scenePalaset.add(spotLight2);
 
+    spotLight2 = new THREE.SpotLight(0xffffff);
+    spotLight2.position.set(5, 10, -5);
+    spotLight2.castShadow = false;
+    spotLight2.intensity = 0.5;
+    scenePalaset.add(spotLight2);
+
     var spotLight2 = new THREE.SpotLight(0xffffff);
     spotLight2.position.set(1, 5, -100);
     spotLight2.castShadow = false;
@@ -550,37 +666,36 @@ function init() {
     sceneTori.add(spotLight_tori2);
 
 
-    var objloader = new THREE.ColladaLoader();
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 5, 0);
+    spotLight.castShadow = false;
+    spotLight.intensity = 1.0;
+    sceneHall.add(spotLight);
 
-    objloader.load(
-        'tower.dae',
-        function ( object ) {
-            object.scene.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
+    spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 0, 0);
+    spotLight.castShadow = false;
+    spotLight.intensity = 1.0;
+    sceneHall.add(spotLight);
 
-                    child.material = new THREE.MeshPhysicalMaterial( {
-                    map: null,
-                    color: 0x9E885B,
-                    metalness: 0.0,
-                    roughness: 0.5,
-                    opacity: 1.0,
-                    envMapIntensity: 5,
-                    premultipliedAlpha: true
-                    } );
+    spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(5, 0, 0);
+    spotLight.castShadow = false;
+    spotLight.intensity = 1.0;
+    sceneHall.add(spotLight);
 
-                    child.scale.set(0.1,0.1,0.1);
-                    child.position.x = -0.1;
-                    child.position.y = -1.0;
-                    child.position.z = -2.8;
-                    child.rotation.x = -1.6;
-                    child.castShadow = true;
-                    scenePalaset.add( child );
+    spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 0, -5);
+    spotLight.castShadow = false;
+    spotLight.intensity = 1.0;
+    sceneHall.add(spotLight);
 
-                }
-            } );
+    spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 0, 5);
+    spotLight.castShadow = false;
+    spotLight.intensity = 1.0;
+    sceneHall.add(spotLight);
 
-        }
-    );
 
     screenQuad = new ScreenQuad({
         width: 1.,
@@ -627,6 +742,14 @@ function init() {
     composerTori.addPass(bokehPass);
     bokeh = bokehPass;
 
+
+    composerHall = new POSTPROCESSING.EffectComposer(renderer);
+    scenePass = new POSTPROCESSING.RenderPass(sceneHall, cameraHall)
+    composerHall.addPass(scenePass);
+    var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
+    pass.renderToScreen = true;
+    composerHall.addPass(pass);
+
 	document.body.appendChild( renderer.domElement );
 
     syncDevice = new JSRocket.SyncDevice();
@@ -643,9 +766,7 @@ function init() {
     syncDevice.on('pause', onPause);
 
     audioElement = document.getElementById("audio");
-    audioElement.oncanplaythrough = onAudioReady;
 
-    setTimeout(function() { audioElement.load(); }, 1000);
 }
 
 function onAudioReady() {
@@ -793,6 +914,15 @@ function render() {
         bokeh.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
         composerTori.render(clock.getDelta());
 
+    } else if (sceneIndex == 3) {
+        scenePass.camera = cameraHall;
+        scenePass.scene = sceneHall;
+        cameraHall.position.x = scene1_meshx.getValue(currentRow);
+        cameraHall.position.y = scene1_meshy.getValue(currentRow);
+        cameraHall.position.z = scene1_meshz.getValue(currentRow);
+        cameraHall.rotation.x = scene1_meshr.getValue(currentRow);
+        cameraHall.rotation.y = scene1_mesha.getValue(currentRow);
+        composerHall.render(clock.getDelta());
 
     }
 
