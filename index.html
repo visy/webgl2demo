@@ -9,6 +9,7 @@ body {
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
 <script src = "ColladaLoader.js"></script>
+<script src = "TargetCamera.js"></script>
 <script src = "GLTFLoader.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
@@ -323,7 +324,7 @@ function init() {
 	cameraPalaset = new THREE.PerspectiveCamera( 110, window.innerWidth / window.innerHeight, 0.01, 10 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
-    cameraTori = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
@@ -453,7 +454,17 @@ function init() {
                     sceneTori.add( child );            
 
 
-                    poliis = child;        
+                    poliis = child;     
+
+
+                    cameraTori.addTarget({
+                    name: 'poliistarget',
+                    targetObject: poliis,
+                    cameraPosition: new THREE.Vector3(0, 0, 10),
+                    fixed: false,
+                    stiffness: 0.1,
+                    matchRotation: true
+                });   
                 }
             });
 /*
@@ -758,17 +769,21 @@ function render() {
         //renderer.render( sceneTolppa, cameraTolppa );
 
     } else if (sceneIndex == 2) {
+        cameraTori.setTarget( 'poliistarget' );
+        cameraTori.update();
         scenePass.camera = cameraTori;
         scenePass.scene = sceneTori;
         poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
-        cameraTori.position.x=-2.5;
-        cameraTori.position.y=-20.5+millis*1.2;
-        cameraTori.position.z=-2.+Math.cos(millis)*3.;
-        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
+        cameraTori.position.x = scene1_meshx.getValue(currentRow);
+        cameraTori.position.y = scene1_meshy.getValue(currentRow);
+        cameraTori.position.z = scene1_meshz.getValue(currentRow);
+        cameraTori.rotation.y = 1.0;
+//        cameraTori.position.x=-2.5;
+//        cameraTori.position.y=-20.5+millis*1.2;
+//        cameraTori.position.z=-2.+Math.cos(millis)*3.;
+//        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
         spotLight_tori1.intensity = 1.0;
                 spotLight_tori2.intensity = 1.0;
-        spotLight_tori1.intensity += Math.cos(millis*10.)*0.1;
-        spotLight_tori2.intensity -= Math.sin(millis*12.)*0.1;
         bokeh.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
