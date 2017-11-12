@@ -326,7 +326,9 @@ var audioInited = false;
 
 function addGLTFCount() {
     gltfcount++;
+    console.log("gltfcount:" + gltfcount);
     if (gltfcount >= allmodelscount && !audioInited) {
+        console.log("all models loaded");
         audioInited = true;
         audioElement.oncanplaythrough = onAudioReady;
         setTimeout(function() { audioElement.load(); }, 100);
@@ -342,6 +344,8 @@ function loadModels() {
         'rose.gltf',
         // called when the resource is loaded
         function ( gltf ) {
+
+            addGLTFCount();
 
             gltf.scene.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
@@ -364,7 +368,6 @@ function loadModels() {
                 }
             });
 
-            addGLTFCount();
 
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
@@ -382,7 +385,7 @@ function loadModels() {
         // called when loading has errors
         function ( error ) {
 
-            console.log( 'An error happened' );
+            console.log( 'An error happened:' + error );
 
         }
     );
@@ -396,6 +399,8 @@ function loadModels() {
         'torip.gltf',
         // called when the resource is loaded
         function ( gltf ) {
+
+            addGLTFCount();
 
             gltf.scene.traverse( function ( child ) {
 
@@ -424,7 +429,6 @@ function loadModels() {
                 });   
             });
 
-            addGLTFCount();
 
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
@@ -442,7 +446,7 @@ function loadModels() {
         // called when loading has errors
         function ( error ) {
 
-            console.log( 'An error happened' );
+            console.log( 'An error happened:' + error );
 
         }
     );
@@ -457,6 +461,7 @@ function loadModels() {
         // called when the resource is loaded
         function ( gltf ) {
 
+            addGLTFCount();
             gltf.scene.traverse( function ( child ) {
 //                if ( child instanceof THREE.Mesh ) {
                     sceneHall.add( child );            
@@ -464,7 +469,6 @@ function loadModels() {
 //                }
             });
 
-            addGLTFCount();
 
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
@@ -482,7 +486,7 @@ function loadModels() {
         // called when loading has errors
         function ( error ) {
 
-            console.log( 'An error happened' );
+            console.log( 'An error happened:' + error );
 
         }
     );
@@ -496,6 +500,7 @@ function loadModels() {
         // called when the resource is loaded
         function ( gltf ) {
 
+            addGLTFCount();
             gltf.scene.traverse( function ( child ) {
 //                if ( child instanceof THREE.Mesh ) {
                     child.position.x -= 2.;
@@ -507,7 +512,6 @@ function loadModels() {
 //                }
             });
 
-            addGLTFCount();
 
 /*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
@@ -525,7 +529,7 @@ function loadModels() {
         // called when loading has errors
         function ( error ) {
 
-            console.log( 'An error happened' );
+            console.log( 'An error happened:' + error );
 
         }
     );
