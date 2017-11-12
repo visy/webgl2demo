@@ -327,7 +327,11 @@ var audioInited = false;
 function addGLTFCount() {
     gltfcount++;
     console.log("gltfcount:" + gltfcount);
+
+    var dd = document.getElementById("loader");
+    loader.innerHTML = "loading (" +gltfcount+"/"+allmodelscount+")"; 
     if (gltfcount >= allmodelscount && !audioInited) {
+        loader.style.display = "none";
         console.log("all models loaded");
         audioInited = true;
         audioElement.oncanplaythrough = onAudioReady;
@@ -946,6 +950,7 @@ function render() {
 	}, false);
 
 </script>
+<div id = "loader">loading demo, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
 	<source src="pzlu3.ogg" id="oggSource" type="audio/ogg" />
 	<source src="pzlu3.mp3" id="mp3Source" type="audio/mpeg" />
