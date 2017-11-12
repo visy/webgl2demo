@@ -289,11 +289,11 @@ var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, poliis, bokeh;
+var roseclone, poliis, bokeh, bokehrose;
 
 var spotLight_tori2, spotLight_tori1;
 
-var demoMode = true;
+var demoMode = false;
 
 var syncDevice,
     //Beats per minute of your demo tune
@@ -538,13 +538,13 @@ function init() {
     sceneTolppa.add(spotLight2);
 
     spotLight_tori1 = new THREE.SpotLight(0xffaaaa);
-    spotLight_tori1.position.set(1, 1, 5);
+    spotLight_tori1.position.set(1, -1, 10);
     spotLight_tori1.castShadow = false;
     spotLight_tori1.intensity = 1.0;
     sceneTori.add(spotLight_tori1);
 
     spotLight_tori2 = new THREE.SpotLight(0xaaffff);
-    spotLight_tori2.position.set(0, 1, 5);
+    spotLight_tori2.position.set(0, 1, 10);
     spotLight_tori2.castShadow = false;
     spotLight_tori2.intensity = 1.0;
     sceneTori.add(spotLight_tori2);
@@ -613,9 +613,10 @@ function init() {
     composerPalaset = new POSTPROCESSING.EffectComposer(renderer);
     var scenePass2 = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
     composerPalaset.addPass(scenePass2);
-    var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
-    pass.renderToScreen = true;
-    composerPalaset.addPass(pass);
+    var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraPalaset);
+    bokehPass2.renderToScreen = true;
+    composerPalaset.addPass(bokehPass2);
+    bokehrose = bokehPass2;
 
     composerTori = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
@@ -739,6 +740,9 @@ function render() {
         cameraPalaset.lookAt(sphereMesh.position);
         if (roseclone) roseclone.rotation.z += delta*0.5;
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
 
 /*
         sphereMesh.position.z = 1.5;

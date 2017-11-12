@@ -1,73 +1,131 @@
-<sync rows="1500">
+<sync rows="4575">
 	<tracks>
-		<track name="scene1_meshx">
-			<key interpolation="2" value="-0.3" row="0"/>
-			<key interpolation="0" value="0" row="127"/>
-			<key interpolation="1" value="-0.05" row="268"/>
-			<key interpolation="1" value="0" row="512"/>
-			<key interpolation="0" value="20" row="768"/>
-		</track>
 		<track name="scene1_meshy">
-			<key interpolation="2" value="6.4" row="0"/>
-			<key interpolation="0" value="0" row="127"/>
-			<key interpolation="0" value="1.2" row="268"/>
-			<key interpolation="3" value="1.2" row="326"/>
-			<key interpolation="3" value="0" row="512"/>
-			<key interpolation="0" value="5" row="768"/>
-			<key interpolation="2" value="5" row="826"/>
-			<key interpolation="0" value="22" row="884"/>
+			<key row="0" value="6.4" interpolation="2"/>
+			<key row="127" value="0" interpolation="0"/>
+			<key row="268" value="1.2" interpolation="0"/>
+			<key row="326" value="1.2" interpolation="3"/>
+			<key row="512" value="0" interpolation="3"/>
+			<key row="768" value="5" interpolation="0"/>
+			<key row="826" value="5" interpolation="2"/>
+			<key row="884" value="19" interpolation="3"/>
+			<key row="900" value="9" interpolation="3"/>
+			<key row="964" value="10" interpolation="0"/>
+			<key row="1152" value="10" interpolation="2"/>
+			<key row="1464" value="16" interpolation="2"/>
+			<key row="1542" value="-14" interpolation="0"/>
+			<key row="1792" value="0" interpolation="1"/>
+			<key row="1919" value="-0.1" interpolation="0"/>
+			<key row="2432" value="5" interpolation="2"/>
+			<key row="2496" value="18" interpolation="0"/>
+		</track>
+		<track name="scene1_meshx">
+			<key row="0" value="-0.3" interpolation="2"/>
+			<key row="127" value="0" interpolation="0"/>
+			<key row="268" value="-0.05" interpolation="1"/>
+			<key row="512" value="0" interpolation="1"/>
+			<key row="768" value="20" interpolation="2"/>
+			<key row="884" value="5" interpolation="2"/>
+			<key row="900" value="30" interpolation="2"/>
+			<key row="964" value="10" interpolation="0"/>
+			<key row="1152" value="10" interpolation="2"/>
+			<key row="1464" value="0" interpolation="2"/>
+			<key row="1542" value="21" interpolation="0"/>
+			<key row="1792" value="0" interpolation="1"/>
+			<key row="1855" value="0.05" interpolation="2"/>
+			<key row="1919" value="-0.0499999" interpolation="0"/>
+			<key row="2432" value="20" interpolation="2"/>
+			<key row="2496" value="10" interpolation="0"/>
+			<key row="2712" value="10" interpolation="1"/>
+			<key row="2720" value="6" interpolation="0"/>
 		</track>
 		<track name="scene1_meshz">
-			<key interpolation="1" value="10.5" row="0"/>
-			<key interpolation="0" value="0" row="127"/>
-			<key interpolation="0" value="1.5" row="268"/>
-			<key interpolation="2" value="1.5" row="344"/>
-			<key interpolation="2" value="0" row="512"/>
-			<key interpolation="1" value="0" row="768"/>
-			<key interpolation="2" value="-10" row="835"/>
-			<key interpolation="0" value="-20" row="872"/>
+			<key row="0" value="10.5" interpolation="1"/>
+			<key row="127" value="0" interpolation="0"/>
+			<key row="268" value="1.5" interpolation="0"/>
+			<key row="344" value="1.5" interpolation="2"/>
+			<key row="512" value="0" interpolation="2"/>
+			<key row="768" value="0" interpolation="1"/>
+			<key row="835" value="-10" interpolation="2"/>
+			<key row="872" value="-20" interpolation="2"/>
+			<key row="964" value="-5" interpolation="0"/>
+			<key row="1152" value="-5" interpolation="2"/>
+			<key row="1464" value="-6" interpolation="2"/>
+			<key row="1542" value="-19" interpolation="0"/>
+			<key row="1792" value="-0.18" interpolation="2"/>
+			<key row="1829" value="-0.01" interpolation="0"/>
+			<key row="2432" value="1" interpolation="2"/>
+			<key row="2496" value="-10" interpolation="0"/>
+			<key row="2712" value="-10" interpolation="1"/>
+			<key row="2720" value="-11" interpolation="0"/>
 		</track>
 		<track name="scene1_meshr">
-			<key interpolation="2" value="0" row="103"/>
-			<key interpolation="0" value="-0.5" row="120"/>
-			<key interpolation="0" value="-1.5" row="124"/>
+			<key row="103" value="0" interpolation="2"/>
+			<key row="120" value="-0.5" interpolation="0"/>
+			<key row="124" value="-1.5" interpolation="0"/>
+			<key row="1792" value="4.9" interpolation="0"/>
 		</track>
 		<track name="scene1_mesha">
-			<key interpolation="0" value="1" row="0"/>
-			<key interpolation="2" value="1" row="116"/>
-			<key interpolation="3" value="0" row="124"/>
-			<key interpolation="0" value="1.1" row="140"/>
+			<key row="0" value="1" interpolation="0"/>
+			<key row="116" value="1" interpolation="2"/>
+			<key row="124" value="0" interpolation="3"/>
+			<key row="140" value="1.1" interpolation="0"/>
+			<key row="1792" value="1" interpolation="0"/>
 		</track>
 		<track name="current_scene">
-			<key interpolation="0" value="1" row="0"/>
-			<key interpolation="0" value="0" row="268"/>
-			<key interpolation="0" value="2" row="509"/>
-			<key interpolation="0" value="0" row="1008"/>
-			<key interpolation="0" value="0" row="1024"/>
+			<key row="0" value="1" interpolation="0"/>
+			<key row="268" value="0" interpolation="0"/>
+			<key row="509" value="2" interpolation="0"/>
+			<key row="1008" value="0" interpolation="0"/>
+			<key row="1024" value="0" interpolation="0"/>
+			<key row="1088" value="1" interpolation="0"/>
+			<key row="1152" value="2" interpolation="0"/>
+			<key row="1544" value="0" interpolation="0"/>
+			<key row="1792" value="1" interpolation="0"/>
+			<key row="1920" value="0" interpolation="0"/>
+			<key row="2112" value="2" interpolation="0"/>
+			<key row="2240" value="1" interpolation="0"/>
+			<key row="2298" value="0" interpolation="0"/>
+			<key row="2368" value="1" interpolation="0"/>
+			<key row="2432" value="2" interpolation="0"/>
+			<key row="2554" value="1" interpolation="0"/>
+			<key row="2620" value="0" interpolation="0"/>
 		</track>
 		<track name="scene2_camerar">
-			<key interpolation="2" value="0" row="261"/>
-			<key interpolation="0" value="3.2" row="389"/>
+			<key row="261" value="0" interpolation="2"/>
+			<key row="389" value="3.2" interpolation="0"/>
 		</track>
 		<track name="scene2_effutime">
-			<key interpolation="2" value="0" row="264"/>
-			<key interpolation="0" value="15" row="850"/>
+			<key row="264" value="0" interpolation="2"/>
+			<key row="850" value="15" interpolation="0"/>
 		</track>
 		<track name="aperture">
-			<key interpolation="3" value="5" row="509"/>
-			<key interpolation="0" value="0.1" row="574"/>
+			<key row="268" value="-4.9" interpolation="2"/>
+			<key row="339" value="0" interpolation="0"/>
+			<key row="482" value="0" interpolation="2"/>
+			<key row="509" value="5" interpolation="3"/>
+			<key row="574" value="0.1" interpolation="0"/>
+			<key row="981" value="0.1" interpolation="2"/>
+			<key row="1020" value="1" interpolation="2"/>
+			<key row="1029" value="0" interpolation="0"/>
+			<key row="1511" value="0" interpolation="2"/>
+			<key row="1550" value="1" interpolation="2"/>
+			<key row="1563" value="0" interpolation="0"/>
 		</track>
 		<track name="dof">
-			<key interpolation="2" value="0.5" row="509"/>
-			<key interpolation="1" value="0.7" row="701"/>
-			<key interpolation="2" value="0.5" row="743"/>
-			<key interpolation="0" value="1" row="768"/>
-			<key interpolation="2" value="1" row="925"/>
-			<key interpolation="3" value="0.4" row="952"/>
-			<key interpolation="0" value="0" row="1010"/>
+			<key row="268" value="1.15" interpolation="0"/>
+			<key row="509" value="0.5" interpolation="2"/>
+			<key row="701" value="0.7" interpolation="1"/>
+			<key row="743" value="0.5" interpolation="2"/>
+			<key row="768" value="1" interpolation="0"/>
+			<key row="955" value="1" interpolation="2"/>
+			<key row="1010" value="0" interpolation="0"/>
 		</track>
 		<track name="focus">
-			<key interpolation="0" value="0.7" row="509"/>
+			<key row="268" value="1.2" interpolation="0"/>
+			<key row="509" value="0.7" interpolation="0"/>
+			<key row="992" value="0.7" interpolation="3"/>
+			<key row="1015" value="1.5" interpolation="0"/>
 		</track>
 	</tracks>
 	<bookmarks/>
