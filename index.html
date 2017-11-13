@@ -12,6 +12,7 @@ body {
 <script src = "TargetCamera.js"></script>
 <script src = "GLTFLoader.js"></script>
 <script src = "TexGen.js"></script>
+<script src = "ShaderExtras.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
 <script src = "syncdata.js"></script>
@@ -557,7 +558,7 @@ function loadModels() {
 
 function init() {
 
-    cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 10 );
+    cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
     cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
@@ -672,6 +673,12 @@ function init() {
     spotLight.intensity = 0.5;
     scenePalaset.add(spotLight);
 
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(0, 10, 0);
+    spotLight.castShadow = false;
+    spotLight.intensity = 5.0;
+    scenePalaset.add(spotLight);
+
     var spotLight2 = new THREE.SpotLight(0xffffff);
     spotLight2.position.set(0, 1, 5);
     spotLight2.castShadow = false;
@@ -743,8 +750,9 @@ function init() {
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setClearColor( 0x000000, 1);
-    renderer.shadowMapEnabled = true;
+    renderer.shadowMapEnabled = false;
     renderer.shadowMapType = THREE.PCFSoftShadowMap; 
 
     screenQuad.setScreenSize( renderer.getSize().width , renderer.getSize().height );
@@ -757,6 +765,9 @@ function init() {
     composerTolppa = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa)
     composerTolppa.addPass(scenePass);
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = false;
+    composerTolppa.addPass(smaapass);
     var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = false;
     composerTolppa.addPass(pass);
@@ -764,27 +775,57 @@ function init() {
     pass.renderToScreen = true;
     composerTolppa.addPass(pass);
 
+
     composerPalaset = new POSTPROCESSING.EffectComposer(renderer);
     var scenePass2 = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
     composerPalaset.addPass(scenePass2);
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = false;
+    composerPalaset.addPass(smaapass);
     var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraPalaset);
-    bokehPass2.renderToScreen = true;
+    bokehPass2.renderToScreen = false;
     composerPalaset.addPass(bokehPass2);
     bokehrose = bokehPass2;
+    var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
+    pass.renderToScreen = true;
+    composerPalaset.addPass(pass);
+
 
     composerTori = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
     composerTori.addPass(scenePass);
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = false;
+    composerTori.addPass(smaapass);
+    var pass = new POSTPROCESSING.FilmPass(sceneTori,cameraTori);
+    pass.renderToScreen = true;
+    composerTori.addPass(pass);
 
+
+    renderTargetParameters = { format: THREE.RGBAFormat, stencilBuffer: false };
+
+    renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );            
+    effectSaveTarget = new POSTPROCESSING.SavePass( new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters ) );
+    effectSaveTarget.clear = false;
+
+    effectBlend = new POSTPROCESSING.TexturePass( effectSaveTarget.renderTarget );   
+    effectBlend.opacity = 0.5;
 
     composerHall = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneHall, cameraHall)
     composerHall.addPass(scenePass);
+    effectSaveTarget.renderToScreen = false;
+    composerHall.addPass( effectSaveTarget );
+    effectBlend.renderToScreen = false;
+    composerHall.addPass( effectBlend );
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = false;
+    composerHall.addPass(smaapass);
+
     var bokehPass =  new POSTPROCESSING.BokehPass(cameraHall);
     bokehPass.renderToScreen = false;
     composerHall.addPass(bokehPass);
     bokeh = bokehPass;
-
     var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
     pass.renderToScreen = true;
     composerHall.addPass(pass);
@@ -919,8 +960,10 @@ function render() {
         if (roseclone) { 
             var i = 0;
 
+        var breaktime = rocket_effutime.getValue(currentRow);
+
             roseclone.material.displacementMap = tgTexture;
-            roseclone.material.displacementScale = Math.max(0.0,1.0-millis*0.15);
+            roseclone.material.displacementScale = Math.max(0.0,1.0-breaktime*0.15);
             roseclone.material.displacementBias = 0.0;
             roseclone.material.displacementMap.needsUpdate = true;
             roseclone.material.needsUpdate = true;
@@ -965,10 +1008,13 @@ function render() {
         scenePass.scene = sceneTori;
         poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
 
-        cameraTori.position.x = rocket_meshx.getValue(currentRow);
-        cameraTori.position.y = rocket_meshy.getValue(currentRow);
-        cameraTori.position.z = rocket_meshz.getValue(currentRow);
-        cameraTori.rotation.y = 1.0;
+        cameraTori.position.x = rocket_camerax.getValue(currentRow);
+        cameraTori.position.y = rocket_cameray.getValue(currentRow);
+        cameraTori.position.z = rocket_cameraz.getValue(currentRow);
+
+        cameraTori.rotation.x = rocket_camerarx.getValue(currentRow);
+        cameraTori.rotation.y = rocket_camerary.getValue(currentRow);
+        cameraTori.rotation.z = rocket_camerarz.getValue(currentRow);
 //        cameraTori.position.x=-2.5;
 //        cameraTori.position.y=-20.5+millis*1.2;
 //        cameraTori.position.z=-2.+Math.cos(millis)*3.;
