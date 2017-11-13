@@ -11,6 +11,7 @@ body {
 <script src = "ColladaLoader.js"></script>
 <script src = "TargetCamera.js"></script>
 <script src = "GLTFLoader.js"></script>
+<script src = "TexGen.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
 <script src = "syncdata.js"></script>
@@ -283,7 +284,7 @@ void main()
 // castle & time fuse by Skoklosters slott Time Fuse is licensed under CC Attribution-ShareAlike
 
 var camera;
-var cameraPalaset, cameraTolppa, cameraTori, cameraHall, scenePalaset, sceneTolppa, sceneTori, sceneHall;
+var cameraPalaset, cameraTolppa, cameraTori, cameraHall, scenePalaset, sceneTolppa, sceneTori, sceneHall, sceneTolppa2;
 var renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
@@ -293,6 +294,9 @@ var syncReady = false;
 var roseclone, poliis, bokeh, bokehrose;
 
 var spotLight_tori2, spotLight_tori1;
+
+var spotLight_hall1;
+var tgTexture;
 
 var demoMode = true;
 
@@ -355,7 +359,7 @@ function loadModels() {
                 if ( child instanceof THREE.Mesh ) {
 
                     roseclone = child.clone();
-                    roseclone.position.z = 1.0;
+                    roseclone.position.z = 1.2;
                     roseclone.position.y = -0.6;
                     roseclone.rotation.x = -2.;
                     roseclone.scale.set(0.2,0.2,0.2);
@@ -466,8 +470,11 @@ function loadModels() {
         function ( gltf ) {
 
             addGLTFCount();
+
+            var ii = 0;
             gltf.scene.traverse( function ( child ) {
 //                if ( child instanceof THREE.Mesh ) {
+
                     sceneHall.add( child );            
 
 //                }
@@ -571,6 +578,7 @@ function init() {
 	clock = new THREE.Clock;
 	scenePalaset = new THREE.Scene();
     sceneTolppa = new THREE.Scene();
+    sceneTolppa2 = new THREE.Scene();
     sceneTori = new THREE.Scene();
     sceneHall = new THREE.Scene();
 
@@ -633,9 +641,22 @@ function init() {
     var cube2 = new THREE.CubeTextureLoader().load( urls );
     cube2.format = THREE.RGBFormat;
 
+    var i = 0;
+    tgTexture = new TG.Texture(1024, 1024)
+    .add( new TG.SinX().frequency( 0.066 + 0.05*Math.sin(1) ) )
+    .add( new TG.SinY().frequency( 0.066 + 0.05*Math.sin(1) ) )
+    .mul( new TG.SinX().offset( 25. ).frequency( 0.044 + 0.09*Math.sin(i/100) ).tint( 2, 2, 2 ) )
+    .mul( new TG.SinY().offset( 16 ).frequency( 0.044 + 0.09*Math.sin(i/100) ).tint( 2, 2, 2 ) )
+    .sub( new TG.Number().tint( 0.5, 2, 4. ) );
+
+    tgTexture = new THREE.Texture(tgTexture.toCanvas());
+    tgTexture.needsUpdate = true;
+
+
     sceneTolppa.background = cube;
     scenePalaset.background = cube2;
     sceneTori.background = cube2;
+    sceneHall.background = new THREE.Color( 0xffffff );
 
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, -5);
@@ -679,6 +700,8 @@ function init() {
     spotLight.castShadow = false;
     spotLight.intensity = 1.0;
     sceneHall.add(spotLight);
+
+    spotLight_hall1 = spotLight;
 
     spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, 0);
@@ -867,7 +890,16 @@ function render() {
     if (sceneIndex == 0) {
         tuniform.iTime.value = scene2_effutime.getValue(currentRow);
         cameraPalaset.lookAt(sphereMesh.position);
-        if (roseclone) roseclone.rotation.z += delta*0.5;
+        if (roseclone) { 
+            var i = 0;
+
+            roseclone.material.displacementMap = tgTexture;
+            roseclone.material.displacementScale = Math.max(0.0,1.0-millis*0.15);
+            roseclone.material.displacementBias = 0.0;
+            roseclone.material.displacementMap.needsUpdate = true;
+            roseclone.material.needsUpdate = true;
+            roseclone.rotation.z += delta*0.5;
+        }
         cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
         bokehrose.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
         bokehrose.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
@@ -907,6 +939,7 @@ function render() {
         scenePass.camera = cameraTori;
         scenePass.scene = sceneTori;
         poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
+
         cameraTori.position.x = scene1_meshx.getValue(currentRow);
         cameraTori.position.y = scene1_meshy.getValue(currentRow);
         cameraTori.position.z = scene1_meshz.getValue(currentRow);
@@ -930,6 +963,8 @@ function render() {
         cameraHall.position.z = scene1_meshz.getValue(currentRow);
         cameraHall.rotation.x = scene1_meshr.getValue(currentRow);
         cameraHall.rotation.y = scene1_mesha.getValue(currentRow);
+        spotLight_hall1.position.z = Math.abs(Math.cos(millis*0.2)*2.);
+        spotLight_hall1.position.x = 5.-Math.abs(Math.sin(millis*0.5)*5.);
         composerHall.render(clock.getDelta());
 
     }
