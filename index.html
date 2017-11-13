@@ -282,6 +282,7 @@ void main()
 // Rose by cosmicollie is licensed under CC Attribution-NonCommercial
 // polliisi by Juha M (from Sketchfab)
 // castle & time fuse by Skoklosters slott Time Fuse is licensed under CC Attribution-ShareAlike
+// Abandoned Warehouse - Interior Scene(https://sketchfab.com/models/1d5285f2e0fd4211a27c8042496d5959) by Aurélien Martel(https://sketchfab.com/aurelien_martel) is licensed under CC Attribution(http://creativecommons.org/licenses/by/4.0/)
 
 var camera;
 var cameraPalaset, cameraTolppa, cameraTori, cameraHall, scenePalaset, sceneTolppa, sceneTori, sceneHall, sceneTolppa2;
@@ -298,6 +299,8 @@ var spotLight_tori2, spotLight_tori1;
 var spotLight_hall1;
 var tgTexture;
 
+var hallMeshes = new Array()
+
 var demoMode = true;
 
 var syncDevice,
@@ -308,17 +311,22 @@ var syncDevice,
     //we calculate this now, so we can translate between rows and seconds later on
     ROW_RATE = BPM / 60 * ROWS_PER_BEAT,
     //your variable that needs tuning in Rocket
-    scene1_meshx,
-    scene1_meshy,
-    scene1_meshz,
-    scene1_meshr,
-    scene1_mesha,
-    scene2_camerar,
-    scene2_effutime,
+    rocket_meshx,
+    rocket_meshy,
+    rocket_meshz,
+    rocket_meshr,
+    rocket_mesha,
+    rocket_camerax,
+    rocket_cameray,
+    rocket_cameraz,
+    rocket_camerarx,
+    rocket_camerary,
+    rocket_camerarz,
+    rocket_effutime,
     current_scene,
-    scene_aperture,
-    scene_dof,
-    scene_focus,
+    rocket_aperture,
+    rocket_dof,
+    rocket_focus,
     //the current row we're on
     row = 0;
 
@@ -465,7 +473,7 @@ function loadModels() {
     // Load a glTF resource
     loadergltf3.load(
         // resource URL
-        'the_king_s_hall/scene.gltf',
+        'abandoned_warehouse_-_interior_scene/scene.gltf',
         // called when the resource is loaded
         function ( gltf ) {
 
@@ -474,7 +482,7 @@ function loadModels() {
             var ii = 0;
             gltf.scene.traverse( function ( child ) {
 //                if ( child instanceof THREE.Mesh ) {
-
+                    hallMeshes.push(child);
                     sceneHall.add( child );            
 
 //                }
@@ -549,17 +557,17 @@ function loadModels() {
 
 function init() {
 
-	cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 10 );
+    cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 10 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
     cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
-    cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 100 );
 
-	window.addEventListener( 'resize', onWindowResize, false );
+    window.addEventListener( 'resize', onWindowResize, false );
 
-	function onWindowResize(){
-	    cameraPalaset.aspect = window.innerWidth / window.innerHeight;
-	    cameraPalaset.updateProjectionMatrix();
+    function onWindowResize(){
+        cameraPalaset.aspect = window.innerWidth / window.innerHeight;
+        cameraPalaset.updateProjectionMatrix();
         cameraTolppa.aspect = window.innerWidth / window.innerHeight;
         cameraTolppa.updateProjectionMatrix();
         cameraTori.aspect = window.innerWidth / window.innerHeight;
@@ -569,38 +577,38 @@ function init() {
         cameraHall.updateProjectionMatrix();
 
         screenQuad.setScreenSize( window.innerWidth*0.1, window.innerHeight*0.1 );
-	    renderer.setSize( window.innerWidth, window.innerHeight );
-	}
+        renderer.setSize( window.innerWidth, window.innerHeight );
+    }
 
     prevSceneIndex = -1;
     sceneIndex = 1;
 
-	clock = new THREE.Clock;
-	scenePalaset = new THREE.Scene();
+    clock = new THREE.Clock;
+    scenePalaset = new THREE.Scene();
     sceneTolppa = new THREE.Scene();
     sceneTolppa2 = new THREE.Scene();
     sceneTori = new THREE.Scene();
     sceneHall = new THREE.Scene();
 
-	var loader = new THREE.TextureLoader();
-	
-	tuniform = {
-        iTime: 		{ type: 'f', value: 0.1 },
+    var loader = new THREE.TextureLoader();
+    
+    tuniform = {
+        iTime:      { type: 'f', value: 0.1 },
         iAlpha:     { type: 'f', value: 1.0 }, 
         iChannel0:  { type: 't', value: loader.load( 'tex1.jpg') },
         iChannel1:  { type: 't', value: loader.load( 'tex2.jpg' ) },
     };
 
-	tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
-	tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
+    tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
+    tuniform.iChannel1.value.wrapS = tuniform.iChannel1.value.wrapT = THREE.RepeatWrapping;
 
-	var materialPala = new THREE.ShaderMaterial({
+    var materialPala = new THREE.ShaderMaterial({
         uniforms: tuniform,
-		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
+        vertexShader: document.getElementById( 'vertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'fragmentPalaset' ).textContent,
         side:THREE.DoubleSide,
         transparent: true,
-	});
+    });
 
 
     materialTolppa = new THREE.ShaderMaterial({
@@ -614,11 +622,11 @@ function init() {
 
     loadModels();
 
-	geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
-	sphereMesh = new THREE.Mesh( geometry, materialPala );
+    geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
+    sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
     sphereMesh.castShadow = false;
-//	scenePalaset.add( sphereMesh );
+//  scenePalaset.add( sphereMesh );
 
     var path = "bud/";
     var format = '.jpg';
@@ -656,7 +664,7 @@ function init() {
     sceneTolppa.background = cube;
     scenePalaset.background = cube2;
     sceneTori.background = cube2;
-    sceneHall.background = new THREE.Color( 0xffffff );
+    sceneHall.background = cube2;
 
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, -5);
@@ -706,25 +714,25 @@ function init() {
     spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, 0);
     spotLight.castShadow = false;
-    spotLight.intensity = 1.0;
+    spotLight.intensity = 0.5;
     sceneHall.add(spotLight);
 
     spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(5, 0, 0);
     spotLight.castShadow = false;
-    spotLight.intensity = 1.0;
+    spotLight.intensity = 0.5;
     sceneHall.add(spotLight);
 
     spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, -5);
     spotLight.castShadow = false;
-    spotLight.intensity = 1.0;
+    spotLight.intensity = 0.5;
     sceneHall.add(spotLight);
 
     spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, 5);
     spotLight.castShadow = false;
-    spotLight.intensity = 1.0;
+    spotLight.intensity = 0.5;
     sceneHall.add(spotLight);
 
 
@@ -733,9 +741,9 @@ function init() {
         height: 1.,
     });
 
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setClearColor( 0x000000, 1);
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFSoftShadowMap; 
 
@@ -768,24 +776,24 @@ function init() {
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
     composerTori.addPass(scenePass);
 
-    var bokehPass =  new POSTPROCESSING.BokehPass(cameraTori);
-    bokehPass.renderToScreen = true;
-    composerTori.addPass(bokehPass);
-    bokeh = bokehPass;
-
 
     composerHall = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneHall, cameraHall)
     composerHall.addPass(scenePass);
+    var bokehPass =  new POSTPROCESSING.BokehPass(cameraHall);
+    bokehPass.renderToScreen = false;
+    composerHall.addPass(bokehPass);
+    bokeh = bokehPass;
+
     var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
     pass.renderToScreen = true;
     composerHall.addPass(pass);
 
-	document.body.appendChild( renderer.domElement );
+    document.body.appendChild( renderer.domElement );
 
     syncDevice = new JSRocket.SyncDevice();
     if (demoMode) {
-        syncDevice.setConfig({'rocketXML':'sync.rocket'});
+        syncDevice.setConfig({'rocketXML':'sync2.rocket'});
         syncDevice.init("demo");
     } else {
         //_syncDevice.setConfig({'socketURL':'ws://192.168.0.100:1339'});
@@ -812,18 +820,23 @@ function onSyncReady(){
 
   //this either adds a track to Rocket, or gets it for you
   current_scene = syncDevice.getTrack('current_scene');
-  scene1_meshx = syncDevice.getTrack('scene1_meshx');
-  scene1_meshy = syncDevice.getTrack('scene1_meshy');
-  scene1_meshz = syncDevice.getTrack('scene1_meshz');
-  scene1_meshr = syncDevice.getTrack('scene1_meshr');
-  scene1_mesha = syncDevice.getTrack('scene1_mesha');
+  rocket_meshx = syncDevice.getTrack('mesh_x');
+  rocket_meshy = syncDevice.getTrack('mesh_y');
+  rocket_meshz = syncDevice.getTrack('mesh_z');
+  rocket_meshr = syncDevice.getTrack('mesh_r');
+  rocket_mesha = syncDevice.getTrack('mesh_a');
 
-  scene2_camerar = syncDevice.getTrack('scene2_camerar');
-  scene2_effutime = syncDevice.getTrack('scene2_effutime');
+  rocket_camerax = syncDevice.getTrack('camera_x');
+  rocket_cameray = syncDevice.getTrack('camera_y');
+  rocket_cameraz = syncDevice.getTrack('camera_z');
+  rocket_camerarx = syncDevice.getTrack('camera_rx');
+  rocket_camerary = syncDevice.getTrack('camera_ry');
+  rocket_camerarz = syncDevice.getTrack('camera_rz');
+  rocket_effutime = syncDevice.getTrack('effutime');
 
-  scene_aperture = syncDevice.getTrack('aperture');
-  scene_dof = syncDevice.getTrack('dof');
-  scene_focus = syncDevice.getTrack('focus');
+  rocket_aperture = syncDevice.getTrack('aperture');
+  rocket_dof = syncDevice.getTrack('dof');
+  rocket_focus = syncDevice.getTrack('focus');
 
   syncReady = true;
 }
@@ -855,6 +868,11 @@ var sceneTime = 0;
 var sceneStartTime = 0;
 var prevTime = 0;
 var delta = 0;
+var meshcopy = null;
+var cposx = new Array(100);
+var cposy = new Array(100);
+var cposz = new Array(100);
+
 
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
@@ -888,8 +906,16 @@ function render() {
     }
 
     if (sceneIndex == 0) {
-        tuniform.iTime.value = scene2_effutime.getValue(currentRow);
-        cameraPalaset.lookAt(sphereMesh.position);
+        tuniform.iTime.value = rocket_effutime.getValue(currentRow);
+
+        cameraPalaset.position.x = rocket_camerax.getValue(currentRow);
+        cameraPalaset.position.y = rocket_cameray.getValue(currentRow);
+        cameraPalaset.position.z = rocket_cameraz.getValue(currentRow);
+        cameraPalaset.rotation.x = rocket_camerarx.getValue(currentRow);
+        cameraPalaset.rotation.y = rocket_camerary.getValue(currentRow);
+        cameraPalaset.rotation.z = rocket_camerarz.getValue(currentRow);
+
+
         if (roseclone) { 
             var i = 0;
 
@@ -900,10 +926,9 @@ function render() {
             roseclone.material.needsUpdate = true;
             roseclone.rotation.z += delta*0.5;
         }
-        cameraPalaset.rotation.y = scene2_camerar.getValue(currentRow);
-        bokehrose.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
-        bokehrose.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
-        bokehrose.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokehrose.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
 
 /*
         sphereMesh.position.z = 1.5;
@@ -911,18 +936,18 @@ function render() {
         sphereMesh.position.x = -0.05;
 */
         composerPalaset.render(clock.getDelta());
-//    	renderer.render( scenePalaset, cameraPalaset );
+//      renderer.render( scenePalaset, cameraPalaset );
     } else if (sceneIndex == 1) {
         scenePass.camera = cameraTolppa;
         scenePass.scene = sceneTolppa;
 
         var animTime = clamp(sceneTime*0.1,0.0,1.0);
-        sphereMesh2.position.x = scene1_meshx.getValue(currentRow);
-        sphereMesh2.position.y = scene1_meshy.getValue(currentRow);
-        sphereMesh2.position.z = scene1_meshz.getValue(currentRow);
-        sphereMesh2.rotation.y = scene1_meshr.getValue(currentRow);
+        sphereMesh2.position.x = rocket_meshx.getValue(currentRow);
+        sphereMesh2.position.y = rocket_meshy.getValue(currentRow);
+        sphereMesh2.position.z = rocket_meshz.getValue(currentRow);
+        sphereMesh2.rotation.y = rocket_meshr.getValue(currentRow);
         tuniform.iTime.value = millis;
-        tuniform.iAlpha.value = scene1_mesha.getValue(currentRow);
+        tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
         materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
 
         cameraTolppa.lookAt(new THREE.Vector3(0.0,0.05,0.5));
@@ -940,9 +965,9 @@ function render() {
         scenePass.scene = sceneTori;
         poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
 
-        cameraTori.position.x = scene1_meshx.getValue(currentRow);
-        cameraTori.position.y = scene1_meshy.getValue(currentRow);
-        cameraTori.position.z = scene1_meshz.getValue(currentRow);
+        cameraTori.position.x = rocket_meshx.getValue(currentRow);
+        cameraTori.position.y = rocket_meshy.getValue(currentRow);
+        cameraTori.position.z = rocket_meshz.getValue(currentRow);
         cameraTori.rotation.y = 1.0;
 //        cameraTori.position.x=-2.5;
 //        cameraTori.position.y=-20.5+millis*1.2;
@@ -950,19 +975,52 @@ function render() {
 //        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
         spotLight_tori1.intensity = 1.0;
                 spotLight_tori2.intensity = 1.0;
-        bokeh.bokehMaterial.uniforms.focus.value = scene_focus.getValue(currentRow);
-        bokeh.bokehMaterial.uniforms.dof.value = scene_dof.getValue(currentRow);
-        bokeh.bokehMaterial.uniforms.aperture.value = scene_aperture.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
         composerTori.render(clock.getDelta());
 
     } else if (sceneIndex == 3) {
         scenePass.camera = cameraHall;
         scenePass.scene = sceneHall;
-        cameraHall.position.x = scene1_meshx.getValue(currentRow);
-        cameraHall.position.y = scene1_meshy.getValue(currentRow);
-        cameraHall.position.z = scene1_meshz.getValue(currentRow);
-        cameraHall.rotation.x = scene1_meshr.getValue(currentRow);
-        cameraHall.rotation.y = scene1_mesha.getValue(currentRow);
+        cameraHall.position.x = rocket_camerax.getValue(currentRow);
+        cameraHall.position.y = rocket_cameray.getValue(currentRow);
+        cameraHall.position.z = rocket_cameraz.getValue(currentRow);
+        cameraHall.rotation.x = rocket_camerarx.getValue(currentRow);
+        cameraHall.rotation.y = rocket_camerary.getValue(currentRow);
+        cameraHall.rotation.z = rocket_camerarz.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokeh.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+
+        var breaktime = rocket_effutime.getValue(currentRow);
+
+        if (hallMeshes) {
+            var i = 0;
+
+            if (meshcopy == null) {
+                meshcopy = true;
+                hallMeshes.forEach(function(child) {
+                    i++;
+                    cposx[i] = child.position.x;
+                    cposy[i] = child.position.y;
+                    cposz[i] = child.position.z;
+                });
+            }
+
+            i = 0;
+            hallMeshes.forEach(function(child) {
+                i++;
+                child.position.x = cposx[i];
+                child.position.y = cposy[i];
+                child.position.z = cposz[i];
+                child.position.x += Math.cos(breaktime*0.001+i*0.5)*breaktime;
+                child.position.y += Math.sin(breaktime*0.001+i*0.4)*breaktime;
+                child.position.z += Math.cos(breaktime*0.001+i*0.3)*breaktime;
+            });
+        }
+
+
         spotLight_hall1.position.z = Math.abs(Math.cos(millis*0.2)*2.);
         spotLight_hall1.position.x = 5.-Math.abs(Math.sin(millis*0.5)*5.);
         composerHall.render(clock.getDelta());
@@ -979,16 +1037,16 @@ function render() {
 
 <body>
 <script>
-	window.addEventListener('load', function() {
-		init();
-		console.log("demo start");
-	}, false);
+    window.addEventListener('load', function() {
+        init();
+        console.log("demo start");
+    }, false);
 
 </script>
 <div id = "loader">loading demo, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
-	<source src="pzlu3.ogg" id="oggSource" type="audio/ogg" />
-	<source src="pzlu3.mp3" id="mp3Source" type="audio/mpeg" />
+    <source src="pzlu3.ogg" id="oggSource" type="audio/ogg" />
+    <source src="pzlu3.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
 </body>
 </html>
