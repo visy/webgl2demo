@@ -483,6 +483,7 @@ function loadModels() {
             var ii = 0;
             gltf.scene.traverse( function ( child ) {
 //                if ( child instanceof THREE.Mesh ) {
+                    child.rotation.x += 0.0;
                     hallMeshes.push(child);
                     sceneHall.add( child );            
 
@@ -748,7 +749,7 @@ function init() {
         height: 1.,
     });
 
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new THREE.WebGLRenderer( { antialias: false } );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setClearColor( 0x000000, 1);
@@ -1027,12 +1028,13 @@ function render() {
         composerTori.render(clock.getDelta());
 
     } else if (sceneIndex == 3) {
+        cameraHall.rotation.x = -1.6;
         scenePass.camera = cameraHall;
         scenePass.scene = sceneHall;
         cameraHall.position.x = rocket_camerax.getValue(currentRow);
         cameraHall.position.y = rocket_cameray.getValue(currentRow);
         cameraHall.position.z = rocket_cameraz.getValue(currentRow);
-        cameraHall.rotation.x = rocket_camerarx.getValue(currentRow);
+        cameraHall.rotation.x += rocket_camerarx.getValue(currentRow);
         cameraHall.rotation.y = rocket_camerary.getValue(currentRow);
         cameraHall.rotation.z = rocket_camerarz.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
@@ -1091,8 +1093,8 @@ function render() {
 </script>
 <div id = "loader">loading demo, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
-    <source src="pzlu3.ogg" id="oggSource" type="audio/ogg" />
-    <source src="pzlu3.mp3" id="mp3Source" type="audio/mpeg" />
+    <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
+    <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
 </body>
 </html>
