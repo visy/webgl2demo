@@ -362,12 +362,16 @@ function addGLTFCount() {
     var dd = document.getElementById("loader");
     loader.innerHTML = "loading (" +gltfcount+"/"+allmodelscount+")"; 
     if (gltfcount >= allmodelscount && !audioInited) {
-        loader.style.display = "none";
-        console.log("all models loaded");
-        audioInited = true;
-        audioElement.oncanplaythrough = onAudioReady;
-        setTimeout(function() { audioElement.load(); }, 100);
+    console.log("all models loaded");
+        modelsdone();
     }
+}
+
+function modelsdone() {
+    loader.style.display = "none";
+    audioElement.oncanplaythrough = onAudioReady;
+    setTimeout(function() { audioElement.load(); }, 200);
+
 }
 
 function loadModels() {
@@ -851,6 +855,19 @@ function init() {
 
     document.body.appendChild( renderer.domElement );
 
+    scenePass.camera = cameraTolppa;
+    scenePass.scene = sceneTolppa;
+    composerTolppa.render(0);
+    scenePass.camera = cameraHall;
+    scenePass.scene = sceneHall;
+    composerHall.render(0); 
+    scenePass.camera = cameraPalaset;
+    scenePass.scene = scenePalaset;
+    composerPalaset.render(0);
+    scenePass.camera = cameraTori;
+    scenePass.scene = sceneTori;
+    composerTori.render(0);
+
     syncDevice = new JSRocket.SyncDevice();
     if (demoMode) {
         syncDevice.setConfig({'rocketXML':'sync2.rocket'});
@@ -869,10 +886,9 @@ function init() {
 }
 
 function onAudioReady() {
-    if(demoMode) {
-        audioElement.play();
-    }
+    audioInited = true;
     render();
+
 }
 
 function onSyncReady(){
@@ -1099,7 +1115,12 @@ function render() {
     }
 
     prevTime = millis;
+
+    if(demoMode && audioElement.paused) {
+        audioElement.play();
+    }
     if (audioElement.paused === false) window.requestAnimationFrame(render);
+
 }
 
 
