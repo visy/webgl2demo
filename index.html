@@ -327,7 +327,7 @@ var tgTexture;
 
 var hallMeshes = new Array()
 
-var demoMode = false;
+var demoMode = true;
 
 var syncDevice,
     //Beats per minute of your demo tune
@@ -707,7 +707,8 @@ function init() {
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 10, 0);
     spotLight.castShadow = false;
-    spotLight.intensity = 5.0;
+
+    spotLight.intensity = 2.0;
     scenePalaset.add(spotLight);
 
     var spotLight2 = new THREE.SpotLight(0xffffff);
@@ -784,7 +785,7 @@ function init() {
     renderer.setPixelRatio( window.devicePixelRatio*1.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = false;
-    renderer.shadowMapType = THREE.PCFSoftShadowMap; 
+
 
     screenQuad.setScreenSize( renderer.getSize().width , renderer.getSize().height );
     screenQuad.material = materialTolppa;
@@ -1037,6 +1038,11 @@ function render() {
             roseclone.material.displacementScale = Math.max(0.0,1.0-breaktime*0.15);
             roseclone.material.displacementBias = 0.0;
             roseclone.material.displacementMap.needsUpdate = true;
+            roseclone.material.envMap = tgTexture;
+            roseclone.receiveShadow = true;
+            roseclone.castShadow = true;
+            roseclone.material.emissiveColor = new THREE.Color( 0xff0000 );;
+
             roseclone.material.needsUpdate = true;
             roseclone.rotation.z += delta*0.5;
         }
