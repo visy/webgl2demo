@@ -5,10 +5,25 @@
 body {
   margin: 0px;
   overflow: hidden;
-  font-family: "Dancing Barefoot";
+  font-family: "XIPAROS";
+  line-height: 0.75;
+  font-size:4em; 
 }
-</style>
 
+p{
+  position:fixed;
+  opacity: 0.0;
+}
+
+span{
+  padding: 10px;
+  text-shadow: 2px 2px #000000; 
+  color: white; 
+
+}
+
+</style>
+<script src = "jquery-3.2.1.min.js"></script>
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
 <script src = "ColladaLoader.js"></script>
@@ -917,7 +932,8 @@ var meshcopy = null;
 var cposx = new Array(100);
 var cposy = new Array(100);
 var cposz = new Array(100);
-
+var demoTime = 0;
+var textIndex = -1;
 
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
@@ -945,10 +961,14 @@ function render() {
 
     sceneIndex = current_scene.getValue(currentRow);
 
+    demoTime += delta;
+
     if (prevSceneIndex != sceneIndex) {
         prevSceneIndex = sceneIndex;
         sceneStartTime = (currentRow/ROW_RATE);
     }
+
+    if (demoTime > 3 && textIndex == -1) animateText();
 
     if (sceneIndex == 0) {
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
@@ -1080,9 +1100,31 @@ function render() {
 
     prevTime = millis;
     if (audioElement.paused === false) window.requestAnimationFrame(render);
-
-
 }
+
+
+function animateText() {
+    textIndex++;
+    var $el = $(".text1:first"), text = $.trim($el.text()),
+        words = text.split(" "), html = "";
+
+    for (var i = 0; i < words.length; i++) {
+        html += "<span>" + words[i] + ((i+1) === words.length ? "" : " ") + "</span>";
+    };
+
+    $el.html(html).children().hide().each(function(i){
+        if (window.preve) window.preve.animate({ opacity: 0 })
+        if ($(this).html() == "<pause>") { } 
+        else { $(this).delay((i*600)).fadeIn(1000); }
+        window.preve = $(this);
+    });
+    var $el = $(".text1");
+    $el.animate({opacity: 0.8});
+    $el.find("span").promise().done(function(){
+        if (window.preve) window.preve.animate({ opacity: 0 })
+    });    
+}
+
 </script>
 </head>
 
@@ -1094,16 +1136,16 @@ function render() {
     }, false);
 
 </script>
-<div id = "loader" style = "position:fixed; color: white; font-size:48px;">loading demo, please wait...</div>
+<div id = "loader" style = "position:fixed;left:0%;top:85%; color: white; font-size:48px;">loading demo, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
-<p id = "text1" style = "position: fixed; top: 25%; left: 25%; width: 50%; padding: 10px; text-shadow: 2px 2px #000000; color: white; font-size:42px; text-align: justify;opacity:0.5;">
-and does it matter that much anyway when everything is exploding around you
-the whole world, ripping out the seams and collapsing inward on itself
-the thousands of pieces flying off into the unknown depths like shrapnel
-and planting broken seeds growing mucous memberanes and oily leaves
+<p class = "text1">
+does it matter that much anyway <pause> <pause> <pause> when everything is exploding around you <pause> <pause> <pause>
+the whole world, ripping out the seams <pause> <pause> <pause> and collapsing inward on itself <pause> <pause> <pause>
+the thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel <pause> <pause> <pause>
+planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves
 </p>
 
 </body>
