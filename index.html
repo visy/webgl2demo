@@ -368,7 +368,7 @@ function addGLTFCount() {
 }
 
 function modelsdone() {
-    loader.style.display = "none";
+    loader.innerHTML = "initializing demo...";
     audioElement.oncanplaythrough = onAudioReady;
     setTimeout(function() { audioElement.load(); }, 200);
 
@@ -1118,6 +1118,8 @@ function render() {
 
     if(demoMode && audioElement.paused) {
         audioElement.play();
+            loader.innerHTML = "";
+
     }
     if (audioElement.paused === false) window.requestAnimationFrame(render);
 
@@ -1157,7 +1159,7 @@ function animateText() {
     }, false);
 
 </script>
-<div id = "loader" style = "position:fixed;left:0%;top:85%; color: white; font-size:48px;">loading demo, please wait...</div>
+<div id = "loader" style = "position:fixed;left:0%;top:85%; color: white; font-size:48px;">loading data, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
