@@ -1008,7 +1008,7 @@ function render() {
         sceneStartTime = (currentRow/ROW_RATE);
     }
 
-    if (demoTime > 3 && textIndex == -1) animateText();
+    if (demoTime > 3 && textIndex == -1 && demoMode) animateText();
 
     if (sceneIndex == 0) {
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
@@ -1145,6 +1145,12 @@ function render() {
         document.getElementById("blocker").style.display = "none";
         audioElement.play();
     }
+
+    if (!demoMode) {
+        loader.innerHTML = "";
+        document.getElementById("blocker").style.display = "none";
+    }
+
     if (audioElement.paused === false) window.requestAnimationFrame(render);
 
 }
