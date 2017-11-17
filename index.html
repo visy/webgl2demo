@@ -1,11 +1,14 @@
 <html>
 <head>
+ <link rel="stylesheet" type="text/css" href="stylesheet.css">
 <style type = "text/css">
 body {
   margin: 0px;
   overflow: hidden;
+  font-family: "Dancing Barefoot";
 }
 </style>
+
 <script src = "three.min.js"></script>
 <script src = "postprocessing.js"></script>
 <script src = "ColladaLoader.js"></script>
@@ -1091,10 +1094,17 @@ function render() {
     }, false);
 
 </script>
-<div id = "loader">loading demo, please wait...</div>
+<div id = "loader" style = "position:fixed; color: white; font-size:48px;">loading demo, please wait...</div>
 <audio id="audio" style = "display:none" preload="auto">
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
+<p id = "text1" style = "position: fixed; top: 25%; left: 25%; width: 50%; padding: 10px; text-shadow: 2px 2px #000000; color: white; font-size:42px; text-align: justify;opacity:0.5;">
+and does it matter that much anyway when everything is exploding around you
+the whole world, ripping out the seams and collapsing inward on itself
+the thousands of pieces flying off into the unknown depths like shrapnel
+and planting broken seeds growing mucous memberanes and oily leaves
+</p>
+
 </body>
 </html>
