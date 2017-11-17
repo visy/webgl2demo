@@ -6,8 +6,8 @@ body {
   margin: 0px;
   overflow: hidden;
   font-family: "XIPAROS";
-  line-height: 0.75;
-  font-size:4em; 
+  line-height: 0.0;
+  font-size:6em; 
 }
 
 p{
@@ -16,6 +16,9 @@ p{
 }
 
 span{
+  position:fixed;
+  top:50%;
+
   padding: 10px;
   text-shadow: 2px 2px #000000; 
   color: white; 
@@ -1135,16 +1138,27 @@ function animateText() {
         html += "<span>" + words[i] + ((i+1) === words.length ? "" : " ") + "</span>";
     };
 
+    window.leftpres = 0;
     $el.html(html).children().hide().each(function(i){
-        if (window.preve) window.preve.animate({ opacity: 0 })
+        window.leftpres = ((i*15) % 80);
+
+        if (window.preve) { 
+            window.preve.animate({ opacity: 0, top: "46%" }, 1000);
+        }
+
+        var value = 0x9F + Math.random() * 0x5F | 0;
+        var grayscale = (value << 16) | (value << 8) | value;
+        var color = '#' + grayscale.toString(16);
+
         if ($(this).html() == "<pause>") { } 
-        else { $(this).delay((i*600)).fadeIn(1000); }
+        else { $(this).delay((i*1200)).fadeIn(1000); $(this).css('left', leftpres + "%"); $(this).css('color', color); }
         window.preve = $(this);
+        window.prevleftpres = window.leftpres;
     });
     var $el = $(".text1");
     $el.animate({opacity: 0.8});
     $el.find("span").promise().done(function(){
-        if (window.preve) window.preve.animate({ opacity: 0 })
+            window.preve.animate({ opacity: 0, top: "46%" }, 1000);
     });    
 }
 
