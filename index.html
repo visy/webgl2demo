@@ -353,6 +353,7 @@ var syncDevice,
     rocket_aperture,
     rocket_dof,
     rocket_focus,
+    rocket_textIndex,
     //the current row we're on
     row = 0;
 
@@ -780,7 +781,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer( { antialias: false } );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setPixelRatio( window.devicePixelRatio*1.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = false;
     renderer.shadowMapType = THREE.PCFSoftShadowMap; 
@@ -938,6 +939,8 @@ function onSyncReady(){
   rocket_dof = syncDevice.getTrack('dof');
   rocket_focus = syncDevice.getTrack('focus');
 
+  rocket_textIndex = syncDevice.getTrack('current_text');
+
   syncReady = true;
 }
 
@@ -1008,7 +1011,11 @@ function render() {
         sceneStartTime = (currentRow/ROW_RATE);
     }
 
-    if (demoTime > 3 && textIndex == -1 && demoMode) animateText();
+    var newTextIndex = rocket_textIndex.getValue(currentRow);
+
+    if (newTextIndex != textIndex) animateText("text"+textIndex);
+
+    textIndex = newTextIndex;
 
     if (sceneIndex == 0) {
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
@@ -1156,9 +1163,8 @@ function render() {
 }
 
 
-function animateText() {
-    textIndex++;
-    var $el = $(".text1:first"), text = $.trim($el.text()),
+function animateText(name) {
+    var $el = $("." + name + ":first"), text = $.trim($el.text()),
         words = text.split(" "), html = "";
 
     for (var i = 0; i < words.length; i++) {
@@ -1166,8 +1172,10 @@ function animateText() {
     };
 
     window.leftpres = 0;
+
+
     $el.html(html).children().hide().each(function(i){
-        window.leftpres = ((i*15) % 80);
+        window.leftpres = ((i*15) % 75);
 
         if (window.preve) { 
             window.preve.animate({ opacity: 0, top: "46%" }, 1000);
@@ -1182,10 +1190,12 @@ function animateText() {
         window.preve = $(this);
         window.prevleftpres = window.leftpres;
     });
-    var $el = $(".text1");
+    var $el = $("."+name);
     $el.animate({opacity: 0.8});
     $el.find("span").promise().done(function(){
+        if (window.preve) { 
             window.preve.animate({ opacity: 0, top: "46%" }, 1000);
+        }
     });    
 }
 
@@ -1207,12 +1217,10 @@ function animateText() {
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
-<p class = "text1">
-does it matter that much anyway <pause> <pause> <pause> when everything is exploding around you <pause> <pause> <pause>
-the whole world, ripping out the seams <pause> <pause> <pause> and collapsing inward on itself <pause> <pause> <pause>
-the thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel <pause> <pause> <pause>
-planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves
-</p>
+<p class = "text1">does it matter that much anyway <pause> <pause> <pause> when everything is exploding around you</p>
+<p class = "text2">the whole world, ripping out the seams <pause> <pause> <pause> and collapsing inward on itself</p>
+<p class = "text3">the thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel</p>
+<p class = "text4">planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves</p>
 
 </body>
 </html>
