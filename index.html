@@ -316,9 +316,9 @@ var renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, composerTolppa, composerPalaset, composerTori, composerHall, materialTolppa, scenePass;
+var screenQuad, sphereMesh2, sphereMesh3, composerTolppa, composerPalaset, composerTori, composerHall, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, poliis, bokeh, bokehrose;
+var roseclone, poliis, bokeh, bokehrose, bokehtori;
 
 var spotLight_tori2, spotLight_tori1;
 
@@ -327,7 +327,7 @@ var tgTexture;
 
 var hallMeshes = new Array()
 
-var demoMode = true;
+var demoMode = false;
 
 var syncDevice,
     //Beats per minute of your demo tune
@@ -359,7 +359,7 @@ var syncDevice,
 
 
 var gltfcount = 0;
-var allmodelscount = 4;
+var allmodelscount = 3;
 var audioInited = false;
 // demo init
 
@@ -404,14 +404,14 @@ function loadModels() {
                     roseclone.scale.set(0.2,0.2,0.2);
                     scenePalaset.add(roseclone);
 
-                    child.position.z = 4.9;
+                    child.position.z = 4.5;
                     child.rotation.x = -0.9;
                     child.rotation.y = 1.5;
-                    child.rotation.z = 2.5;
-                    child.position.y = -2.2;
-                    child.position.x = -0.5;
-                    child.scale.set(0.2,0.2,0.2);
-                    sceneTolppa.add( child );                    
+                    child.rotation.z = 1.5;
+                    child.position.y = 4.1;
+                    child.position.x = 8.;
+                    child.scale.set(0.5,0.5,0.5);
+                    sceneTori.add( child );                    
                 }
             });
 
@@ -437,7 +437,7 @@ function loadModels() {
         }
     );
 
-
+/*
     var loadergltf2 = new THREE.GLTFLoader();
 
     // Load a glTF resource
@@ -477,12 +477,10 @@ function loadModels() {
             });
 
 
-/*
             gltf.animations; // Array&lt;THREE.AnimationClip&gt;
             gltf.scene; // THREE.Scene
             gltf.scenes; // Array&lt;THREE.Scene&gt;
             gltf.cameras; // Array&lt;THREE.Camera&gt;
-*/
         },
         // called when loading is in progresses
         function ( xhr ) {
@@ -497,7 +495,7 @@ function loadModels() {
 
         }
     );
-
+*/
 
     var loadergltf3 = new THREE.GLTFLoader();
 
@@ -585,14 +583,69 @@ function loadModels() {
         }
     );
 
+
+    // museo
+
+    var geometry = new THREE.BoxGeometry( 200, 30, 30);
+
+     var material = new THREE.MeshPhysicalMaterial({
+            color: 0xDEB887*0.5,
+            roughness: 0.9,
+            metalness: 0.2,
+            clearCoat: 0.9,
+            clearCoatRoughness: 0.3,
+            reflectivity: 1.0,
+            bumpMap: new THREE.TextureLoader().load("tex1.jpg"),
+            bumpScale: 0.1,
+            side: THREE.DoubleSide
+    });
+
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.receiveShadow = true;
+    mesh.position.z = 0;
+    mesh.position.y = 10;
+    sceneTori.add(mesh);
+
+
+    var i = 0;
+    for (i = 0; i < 8; i++) {
+     var geometry = new THREE.CylinderGeometry( 1.5, 1.5, 6, 128 );
+
+     var material = new THREE.MeshPhysicalMaterial({
+            color: 0x3F51B5,
+            roughness: 0.5,
+            metalness: 0.7,
+            clearCoat: 0.5,
+            clearCoatRoughness: 0.5,
+            reflectivity: 0.7
+    });
+
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+    mesh.position.z = -5;
+    mesh.position.x = -1+i*5;
+    sceneTori.add(mesh);
+
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+    mesh.position.z = 5;
+    mesh.position.x = -1+i*5;
+    sceneTori.add(mesh);
+
+    } 
+
+
 }
+
 
 function init() {
 
     cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
-    cameraTori = new THREE.TargetCamera( 80, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    cameraTori = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.01, 1000 );
     cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 100 );
 
     window.addEventListener( 'resize', onWindowResize, false );
@@ -652,8 +705,6 @@ function init() {
     });
 
 
-    loadModels();
-
     geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
     sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
@@ -692,10 +743,11 @@ function init() {
     tgTexture = new THREE.Texture(tgTexture.toCanvas());
     tgTexture.needsUpdate = true;
 
+    loadModels();
+
 
     sceneTolppa.background = cube;
     scenePalaset.background = cube2;
-    sceneTori.background = cube2;
     sceneHall.background = cube2;
 
     var spotLight = new THREE.SpotLight(0xffffff);
@@ -729,18 +781,12 @@ function init() {
     spotLight2.intensity = 2.0;
     sceneTolppa.add(spotLight2);
 
-    spotLight_tori1 = new THREE.SpotLight(0xffaaaa);
-    spotLight_tori1.position.set(1, -1, 10);
-    spotLight_tori1.castShadow = false;
-    spotLight_tori1.intensity = 1.0;
-    sceneTori.add(spotLight_tori1);
-
-    spotLight_tori2 = new THREE.SpotLight(0xaaffff);
-    spotLight_tori2.position.set(0, 1, 10);
-    spotLight_tori2.castShadow = false;
-    spotLight_tori2.intensity = 1.0;
-    sceneTori.add(spotLight_tori2);
-
+    spotLight_tori1 = new THREE.PointLight( 0xffffff, 1, 100 );
+    spotLight_tori1.position.set( 0, 0, -5 );
+    sceneTori.add( spotLight_tori1 );
+    spotLight_tori2 = new THREE.PointLight( 0xffffff, 1, 100 );
+    spotLight_tori2.position.set( 0, 0, 5 );
+    sceneTori.add( spotLight_tori2 );
 
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 5, 0);
@@ -784,7 +830,7 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setPixelRatio( window.devicePixelRatio*1.0 );
     renderer.setClearColor( 0x000000, 1);
-    renderer.shadowMapEnabled = false;
+    renderer.shadowMapEnabled = true;
 
 
     screenQuad.setScreenSize( renderer.getSize().width , renderer.getSize().height );
@@ -793,6 +839,14 @@ function init() {
     sphereMesh2 = new THREE.Mesh( geometry, materialTolppa );
 
     sceneTolppa.add(sphereMesh2);
+
+    sphereMesh3 = new THREE.Mesh( geometry, materialTolppa );
+    sphereMesh3.position.y = 0;
+    sphereMesh3.position.x = -5;
+    sphereMesh3.scale.set(5.,5.,5.);
+    sphereMesh3.rotation.z = 1.5;
+    sceneTori.add(sphereMesh3);
+
 
     composerTolppa = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa)
@@ -829,6 +883,10 @@ function init() {
     var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
     smaapass.renderToScreen = false;
     composerTori.addPass(smaapass);
+    var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraTori);
+    bokehPass2.renderToScreen = false;
+    composerTori.addPass(bokehPass2);
+    bokehtori = bokehPass2;
     var pass = new POSTPROCESSING.FilmPass(sceneTori,cameraTori);
     pass.renderToScreen = true;
     composerTori.addPass(pass);
@@ -1079,11 +1137,19 @@ function render() {
         //renderer.render( sceneTolppa, cameraTolppa );
 
     } else if (sceneIndex == 2) {
-        cameraTori.setTarget( 'poliistarget' );
-        cameraTori.update();
+//        cameraTori.setTarget( 'poliistarget' );
+//        cameraTori.update();
         scenePass.camera = cameraTori;
         scenePass.scene = sceneTori;
-        poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
+//        poliis.rotation.z = Math.abs(Math.cos(millis*0.1)*2.5)+Math.sin(millis*0.1)*0.1;
+        var animTime = clamp(sceneTime*0.1,0.0,1.0);
+        sphereMesh3.position.x = rocket_meshx.getValue(currentRow);
+        sphereMesh3.position.y = rocket_meshy.getValue(currentRow);
+        sphereMesh3.position.z = rocket_meshz.getValue(currentRow);
+        sphereMesh3.rotation.y = rocket_meshr.getValue(currentRow);
+        tuniform.iTime.value = millis;
+        tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
+        materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
 
         cameraTori.position.x = rocket_camerax.getValue(currentRow);
         cameraTori.position.y = rocket_cameray.getValue(currentRow);
@@ -1097,10 +1163,13 @@ function render() {
 //        cameraTori.position.z=-2.+Math.cos(millis)*3.;
 //        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
         spotLight_tori1.intensity = 1.0;
-                spotLight_tori2.intensity = 1.0;
-        bokeh.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
-        bokeh.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
-        bokeh.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+        spotLight_tori2.intensity = 1.0;
+        spotLight_tori1.position = cameraTori.position;
+        spotLight_tori2.position = cameraTori.position;
+        bokehtori.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokehtori.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokehtori.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+
         composerTori.render(clock.getDelta());
 
     } else if (sceneIndex == 3) {
