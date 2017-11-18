@@ -587,15 +587,27 @@ function loadModels() {
     // museo
 
     var geometry = new THREE.BoxGeometry( 200, 30, 30);
+    var tex = new THREE.TextureLoader().load("tex2.jpg");
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set( 12, 12 );
+    tex.minFilter = THREE.LinearMipMapNearestFilter;
+    tex.anisotropy = 4;
+
+    var tex2 = new THREE.TextureLoader().load("tex1.jpg");
+    tex2.wrapS = tex2.wrapT = THREE.RepeatWrapping;
+    tex2.repeat.set( 12, 12 );
+    tex2.minFilter = THREE.LinearMipMapNearestFilter;
+    tex2.anisotropy = 4;
 
      var material = new THREE.MeshPhysicalMaterial({
-            color: 0xDEB887*0.5,
+            color: 0x252535,
             roughness: 0.9,
             metalness: 0.2,
             clearCoat: 0.9,
-            clearCoatRoughness: 0.3,
-            reflectivity: 1.0,
-            bumpMap: new THREE.TextureLoader().load("tex1.jpg"),
+            clearCoatRoughness: 0.9,
+            reflectivity: 0.8,
+            bumpMap: tex,
+            aoMap: tex2,
             bumpScale: 0.1,
             side: THREE.DoubleSide
     });
