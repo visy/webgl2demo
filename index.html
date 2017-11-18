@@ -37,6 +37,7 @@ span{
 <script src = "TargetCamera.js"></script>
 <script src = "GLTFLoader.js"></script>
 <script src = "TexGen.js"></script>
+<script src = "subdiv.js"></script>
 <script src = "ShaderExtras.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
@@ -639,6 +640,9 @@ function loadModels() {
     mesh.castShadow = true;
     mesh.position.z = -5;
     mesh.position.x = -1+i*5;
+    var modifier = new THREE.BufferSubdivisionModifier(1);
+    modifier.modify( mesh.geometry );
+
     sceneTori.add(mesh);
 
     var mesh = new THREE.Mesh( geometry, material );
@@ -646,6 +650,8 @@ function loadModels() {
     mesh.castShadow = true;
     mesh.position.z = 5;
     mesh.position.x = -1+i*5;
+    var modifier = new THREE.BufferSubdivisionModifier(1);
+    modifier.modify( mesh.geometry );
     sceneTori.add(mesh);
 
     } 
@@ -659,7 +665,7 @@ function init() {
     cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
         cameraPalaset.position.z = 0.2;
-    cameraTori = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    cameraTori = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.01, 1000 );
     cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 100 );
 
     window.addEventListener( 'resize', onWindowResize, false );
@@ -719,7 +725,7 @@ function init() {
     });
 
 
-    geometry = new THREE.SphereGeometry( 0.2, 16, 16 );
+    geometry = new THREE.SphereGeometry( 0.2, 64, 64 );
     sphereMesh = new THREE.Mesh( geometry, materialPala );
     sphereMesh.receiveShadow = false;
     sphereMesh.castShadow = false;
@@ -870,6 +876,7 @@ function init() {
     sphereMesh3.position.x = -5;
     sphereMesh3.scale.set(5.,5.,5.);
     sphereMesh3.rotation.z = 1.5;
+
     sceneTori.add(sphereMesh3);
 
 
@@ -1177,7 +1184,7 @@ function render() {
         tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
         materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
 
-            rose.rotation.z += delta*0.5;
+        if (rose) rose.rotation.z += delta*0.5;
 
 
         cameraTori.position.x = rocket_camerax.getValue(currentRow);
