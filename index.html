@@ -318,7 +318,7 @@ var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, sphereMesh3, composerTolppa, composerPalaset, composerTori, composerHall, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, poliis, bokeh, bokehrose, bokehtori;
+var roseclone, rose, poliis, bokeh, bokehrose, bokehtori;
 
 var spotLight_tori2, spotLight_tori1;
 
@@ -396,6 +396,7 @@ function loadModels() {
 
             gltf.scene.traverse( function ( child ) {
                 if ( child instanceof THREE.Mesh ) {
+                    child.castShadow = true;
 
                     roseclone = child.clone();
                     roseclone.position.z = 1.2;
@@ -404,13 +405,14 @@ function loadModels() {
                     roseclone.scale.set(0.2,0.2,0.2);
                     scenePalaset.add(roseclone);
 
-                    child.position.z = 4.5;
+                    child.position.z = 4.7;
                     child.rotation.x = -0.9;
-                    child.rotation.y = 1.5;
+                    child.rotation.y = 1.1;
                     child.rotation.z = 1.5;
-                    child.position.y = 4.1;
+                    child.position.y = 3.5;
                     child.position.x = 8.;
                     child.scale.set(0.5,0.5,0.5);
+                    rose = child;
                     sceneTori.add( child );                    
                 }
             });
@@ -615,7 +617,7 @@ function loadModels() {
     var mesh = new THREE.Mesh( geometry, material );
     mesh.receiveShadow = true;
     mesh.position.z = 0;
-    mesh.position.y = 10;
+    mesh.position.y = 13;
     sceneTori.add(mesh);
 
 
@@ -762,6 +764,15 @@ function init() {
     scenePalaset.background = cube2;
     sceneHall.background = cube2;
 
+    var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    scenePalaset.add( light );
+    var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    sceneTori.add( light );
+    var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    sceneTolppa.add( light );
+    var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    sceneHall.add( light );
+
     var spotLight = new THREE.SpotLight(0xffffff);
     spotLight.position.set(0, 0, -5);
     spotLight.castShadow = false;
@@ -794,9 +805,11 @@ function init() {
     sceneTolppa.add(spotLight2);
 
     spotLight_tori1 = new THREE.PointLight( 0xffffff, 1, 100 );
+    spotLight_tori1.castShadow = false;
     spotLight_tori1.position.set( 0, 0, -5 );
     sceneTori.add( spotLight_tori1 );
     spotLight_tori2 = new THREE.PointLight( 0xffffff, 1, 100 );
+    spotLight_tori2.castShadow = true;
     spotLight_tori2.position.set( 0, 0, 5 );
     sceneTori.add( spotLight_tori2 );
 
@@ -1059,6 +1072,7 @@ function easeInOut(t) {
 
 function render() {
     if (syncReady === false) return;
+
     var currentRow = audioElement.currentTime * ROW_RATE;
             if(audioElement.paused === false) {
                 //otherwise we may jump into a point in the audio where there's
@@ -1162,6 +1176,9 @@ function render() {
         tuniform.iTime.value = millis;
         tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
         materialTolppa.opacity = THREE.Math.lerp(0.0,0.1,easeInOut(animTime));
+
+            rose.rotation.z += delta*0.5;
+
 
         cameraTori.position.x = rocket_camerax.getValue(currentRow);
         cameraTori.position.y = rocket_cameray.getValue(currentRow);
@@ -1304,10 +1321,11 @@ function animateText(name) {
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
-<p class = "text1">does it matter that much anyway <pause> <pause> <pause> when everything is exploding around you</p>
-<p class = "text2">the whole world, ripping out the seams <pause> <pause> <pause> and collapsing inward on itself</p>
-<p class = "text3">the thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel</p>
-<p class = "text4">planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves</p>
+<p class = "text1">Quadtrip <pause> presents: <pause> a&nbsp;demo <pause> for&nbsp;Vortex&nbsp;2017</p>
+<p class = "text2">does&nbsp;it matter that much anyway <pause> <pause> <pause> when everything is exploding around you</p>
+<p class = "text3">the&nbsp;whole world, ripping out the&nbsp;seams <pause> <pause> <pause> and collapsing inward on itself</p>
+<p class = "text4">the&nbsp;thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel</p>
+<p class = "text5">planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves</p>
 
 </body>
 </html>
