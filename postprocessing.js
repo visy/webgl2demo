@@ -670,7 +670,7 @@
   						options.noiseIntensity = 0.5;
   				}
   				if (options.scanlineIntensity === undefined) {
-  						options.scanlineIntensity = 0.05;
+  						options.scanlineIntensity = 0.1;
   				}
   				if (options.greyscaleIntensity === undefined) {
   						options.greyscaleIntensity = 1.0;

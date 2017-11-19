@@ -1013,9 +1013,9 @@ var renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
-var screenQuad, sphereMesh2, sphereMesh3, sphereMesh4, composerTolppa, composerPalaset, composerTori, composerHall, materialTolppa, scenePass;
+var screenQuad, sphereMesh2, sphereMesh3, sphereMesh4, composerTolppa, composerPalaset, composerTori, composerHall, composerBranch, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, rose, poliis, bokeh, bokehrose, bokehtori;
+var roseclone, rose, poliis, bokeh, bokehrose, bokehtori, bokehbranch;
 
 var spotLight_tori2, spotLight_tori1;
 
@@ -1031,7 +1031,7 @@ var pilarGroup = new THREE.Group();
 
 var bufferScene;
 var bufferTexture;
-var demoMode = true;
+var demoMode = false;
 
 var syncDevice,
     //Beats per minute of your demo tune
@@ -1276,6 +1276,7 @@ function loadModels() {
     var tx5 = new THREE.TextureLoader().load("PBR_sign_baseColor6.png");
     var tx6 = new THREE.TextureLoader().load("PBR_sign_baseColor7.png");
     var tx7 = new THREE.TextureLoader().load("PBR_sign_baseColor8.png");
+    var tx8 = new THREE.TextureLoader().load("PBR_sign_baseColor9.png");
 
     tx1.flipY = false;
     tx1.wrapS = THREE.RepeatWrapping;
@@ -1312,6 +1313,10 @@ function loadModels() {
     tx7.wrapT = THREE.RepeatWrapping;
     tx7.repeat.set( 1, 1 );
 
+    tx8.flipY = false;
+    tx8.wrapS = THREE.RepeatWrapping;
+    tx8.wrapT = THREE.RepeatWrapping;
+    tx8.repeat.set( 1, 1 );
 
     // Load a glTF resource
     loadergltf5.load(
@@ -1340,7 +1345,7 @@ function loadModels() {
                                         if (i == 4) child2.material.map = tx5;
                                         if (i == 5) child2.material.map = tx6;
                                         if (i == 6) child2.material.map = tx7;
-                                        if (i == 7) child2.material.map = tx1;
+                                        if (i == 7) child2.material.map = tx8;
                                         child2.material.map.needsUpdate= true;
                                         child2.material.needsUpdate= true;
                                     }                                    
@@ -1352,6 +1357,16 @@ function loadModels() {
                         clone.receiveShadow = true;
                         clone.castShadow = true;
                         clone.position.z = 5;
+                        clone.position.y = -9.0;
+                        clone.position.x = -1+i*5;
+
+                        clone.scale.set(0.02,0.02,0.02);
+                        sceneTori.add(clone);
+
+                        clone = child.clone();
+                        clone.receiveShadow = true;
+                        clone.castShadow = true;
+                        clone.position.z = -5;
                         clone.position.y = -9.0;
                         clone.position.x = -1+i*5;
 
@@ -1405,13 +1420,13 @@ function loadModels() {
     var geometry = new THREE.BoxGeometry( 200, 30, 30);
     var tex = new THREE.TextureLoader().load("tex2.jpg");
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set( 12, 12 );
+    tex.repeat.set( 12, 4 );
     tex.minFilter = THREE.LinearMipMapNearestFilter;
     tex.anisotropy = 4;
 
     var tex2 = new THREE.TextureLoader().load("tex1.jpg");
     tex2.wrapS = tex2.wrapT = THREE.RepeatWrapping;
-    tex2.repeat.set( 12, 12 );
+    tex2.repeat.set( 12, 4 );
     tex2.minFilter = THREE.LinearMipMapNearestFilter;
     tex2.anisotropy = 4;
 
@@ -1659,7 +1674,7 @@ function init() {
     renderer.shadowMapEnabled = true;
 
     bufferScene = new THREE.Scene();
-    bufferTexture = new THREE.WebGLRenderTarget( 640, 360, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
+    bufferTexture = new THREE.WebGLRenderTarget( 320, 180, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
 
     var pgeometry = new THREE.PlaneGeometry( 3.0, 1.7 );
     var mesh = new THREE.Mesh( pgeometry, materialBranch );
@@ -1739,10 +1754,6 @@ function init() {
     composerHall = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneHall, cameraHall)
     composerHall.addPass(scenePass);
-    effectSaveTarget.renderToScreen = false;
-    composerHall.addPass( effectSaveTarget );
-    effectBlend.renderToScreen = false;
-    composerHall.addPass( effectBlend );
     var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
     smaapass.renderToScreen = false;
     composerHall.addPass(smaapass);
@@ -1754,6 +1765,19 @@ function init() {
     var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
     pass.renderToScreen = true;
     composerHall.addPass(pass);
+
+    composerBranch = new POSTPROCESSING.EffectComposer(renderer);
+    scenePass = new POSTPROCESSING.RenderPass(sceneBranch, cameraBranch)
+    composerBranch.addPass(scenePass);
+
+    var bokehPass =  new POSTPROCESSING.BokehPass(cameraBranch);
+    bokehPass.renderToScreen = false;
+    composerBranch.addPass(bokehPass);
+    bokehbranch = bokehPass;
+    var pass = new POSTPROCESSING.FilmPass(sceneBranch,cameraBranch);
+    pass.renderToScreen = true;
+    composerBranch.addPass(pass);
+
 
     document.body.appendChild( renderer.domElement );
 
@@ -2064,6 +2088,13 @@ function render() {
         composerHall.render(clock.getDelta());
  
     } else if (sceneIndex == 4) {
+        scenePass.camera = cameraBranch;
+        scenePass.scene = sceneBranch;
+
+        bokehbranch.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokehbranch.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokehbranch.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+
         cameraBranch.position.x = rocket_camerax.getValue(currentRow);
         cameraBranch.position.y = rocket_cameray.getValue(currentRow);
         cameraBranch.position.z = rocket_cameraz.getValue(currentRow);
@@ -2075,7 +2106,8 @@ function render() {
         tuniform.iResolution.value = new THREE.Vector2(window.innerWidth*0.5,window.innerHeight*0.5);
         tuniform.iMouse.value = new THREE.Vector2(rocket_meshx.getValue(currentRow),rocket_meshy.getValue(currentRow));
         renderer.render(bufferScene, cameraBranchEff, bufferTexture);
-        renderer.render( sceneBranch, cameraBranch );
+        composerBranch.render(clock.getDelta());
+//        renderer.render( sceneBranch, cameraBranch );
     }
 
     prevTime = millis;
