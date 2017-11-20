@@ -1368,6 +1368,7 @@ function loadModels() {
                             var once = 0;
                             child.traverse( function ( child2 ) {
                                 if (child2.material) {
+
                                     if (child2.material.name = "PBR sign") {
                                         once++;
                                         if (once == 8) {
@@ -1383,16 +1384,14 @@ function loadModels() {
                                             child2.material.map.needsUpdate= true;
                                             child2.material.needsUpdate= true;
                                         }
+                                        child2.material.aoMap = THREE.ImageUtils.loadTexture('pbrao1.png'),
+                                        child2.material.normalMap = THREE.ImageUtils.loadTexture('pbrnormal1.png'),
+                                        child2.material.normalScale = new THREE.Vector2(0.1,0.1);
+                                        child2.material.needsUpdate= true;
 
-                                        if (once < 5) {
-                                            child2.material = child2.material.clone();
-                                            child2.material.aoMap = THREE.ImageUtils.loadTexture('pbrao1.png'),
-                                            child2.material.normalMap = THREE.ImageUtils.loadTexture('pbrnormal1.png'),
-                                            child2.material.map.needsUpdate= true;
-                                            child2.material.needsUpdate= true;
-                                        }
+                                    } else {
 
-                                    }                                    
+                                    }                              
                                 }
                                 console.log(child2.material);
                             });
