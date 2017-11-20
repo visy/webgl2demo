@@ -1019,6 +1019,7 @@ var roseclone, rose, poliis, bokeh, bokehrose, bokehtori, bokehbranch;
 
 var spotLight_tori2, spotLight_tori1;
 
+
 var spotLight_hall1;
 var tgTexture;
 var rtTexture;
@@ -1031,7 +1032,24 @@ var pilarGroup = new THREE.Group();
 
 var bufferScene;
 var bufferTexture;
-var demoMode = true;
+
+
+/////////////////////////
+
+/////////////////////////
+
+/////////////////////////
+
+var demoMode = false;
+
+/////////////////////////
+
+/////////////////////////
+
+/////////////////////////
+
+
+
 
 var syncDevice,
     //Beats per minute of your demo tune
@@ -1058,6 +1076,26 @@ var syncDevice,
     rocket_dof,
     rocket_focus,
     rocket_textIndex,
+    rocket_light1x,
+    rocket_light1y,
+    rocket_light1z,
+    rocket_light1i,
+    rocket_light2x,
+    rocket_light2y,
+    rocket_light2z,
+    rocket_light2i,
+    rocket_light3x,
+    rocket_light3y,
+    rocket_light3z,
+    rocket_light3i,
+    rocket_light4x,
+    rocket_light4y,
+    rocket_light4z,
+    rocket_light4i,
+    rocket_light5x,
+    rocket_light5y,
+    rocket_light5z,
+    rocket_light5i,
     //the current row we're on
     row = 0;
 
@@ -1634,12 +1672,12 @@ function init() {
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
-    renderer.setPixelRatio( window.devicePixelRatio*1.0 );
+    renderer.setPixelRatio( window.devicePixelRatio*2.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = true;
 
     bufferScene = new THREE.Scene();
-    bufferTexture = new THREE.WebGLRenderTarget( 320, 180, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
+    bufferTexture = new THREE.WebGLRenderTarget( 320*2, 180*2, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
 
     var pgeometry = new THREE.PlaneGeometry( 3.0, 1.7 );
     var mesh = new THREE.Mesh( pgeometry, materialBranch );
@@ -1829,6 +1867,31 @@ function onSyncReady(){
 
   rocket_textIndex = syncDevice.getTrack('current_text');
 
+  rocket_light1x = syncDevice.getTrack('light1_x');
+  rocket_light1y = syncDevice.getTrack('light1_y');
+  rocket_light1z = syncDevice.getTrack('light1_z');
+  rocket_light1i = syncDevice.getTrack('light1_int');
+
+  rocket_light2x = syncDevice.getTrack('light2_x');
+  rocket_light2y = syncDevice.getTrack('light2_y');
+  rocket_light2z = syncDevice.getTrack('light2_z');
+  rocket_light2i = syncDevice.getTrack('light2_int');
+
+  rocket_light3x = syncDevice.getTrack('light3_x');
+  rocket_light3y = syncDevice.getTrack('light3_y');
+  rocket_light3z = syncDevice.getTrack('light3_z');
+  rocket_light3i = syncDevice.getTrack('light3_int');
+
+  rocket_light4x = syncDevice.getTrack('light4_x');
+  rocket_light4y = syncDevice.getTrack('light4_y');
+  rocket_light4z = syncDevice.getTrack('light4_z');
+  rocket_light4i = syncDevice.getTrack('light4_int');
+
+  rocket_light5x = syncDevice.getTrack('light5_x');
+  rocket_light5y = syncDevice.getTrack('light5_y');
+  rocket_light5z = syncDevice.getTrack('light5_z');
+  rocket_light5i = syncDevice.getTrack('light5_int');
+
   syncReady = true;
 }
 
@@ -1875,6 +1938,45 @@ function easeInOut(t) {
   return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1
 }
 
+function doLights(currentRow, scene) {
+    var light = 0;
+    scene.traverse( function ( child ) {
+        if ( child instanceof THREE.HemisphereLight ||
+             child instanceof THREE.PointLight ||
+             child instanceof THREE.SpotLight) {
+
+            if (light == 0) {
+                child.position.x = rocket_light1x.getValue(currentRow);
+                child.position.y = rocket_light1y.getValue(currentRow);
+                child.position.z = rocket_light1z.getValue(currentRow);
+                child.intensity  = rocket_light1i.getValue(currentRow); 
+            } else if (light == 1) {
+                child.position.x = rocket_light2x.getValue(currentRow);
+                child.position.y = rocket_light2y.getValue(currentRow);
+                child.position.z = rocket_light2z.getValue(currentRow);
+                child.intensity  = rocket_light2i.getValue(currentRow);                 
+            } else if (light == 2) {
+                child.position.x = rocket_light3x.getValue(currentRow);
+                child.position.y = rocket_light3y.getValue(currentRow);
+                child.position.z = rocket_light3z.getValue(currentRow);
+                child.intensity  = rocket_light3i.getValue(currentRow);                 
+            } else if (light == 3) {
+                child.position.x = rocket_light4x.getValue(currentRow);
+                child.position.y = rocket_light4y.getValue(currentRow);
+                child.position.z = rocket_light4z.getValue(currentRow);
+                child.intensity  = rocket_light4i.getValue(currentRow);                 
+            } else if (light == 4) {
+                child.position.x = rocket_light5x.getValue(currentRow);
+                child.position.y = rocket_light5y.getValue(currentRow);
+                child.position.z = rocket_light5z.getValue(currentRow);
+                child.intensity  = rocket_light5i.getValue(currentRow);                 
+            }
+            light++;
+        }
+    });
+
+}
+
 function render() {
     if (syncReady === false) return;
 
@@ -1917,6 +2019,7 @@ function render() {
         cameraPalaset.rotation.y = rocket_camerary.getValue(currentRow);
         cameraPalaset.rotation.z = rocket_camerarz.getValue(currentRow);
 
+        doLights(currentRow,scenePalaset);
 
         if (roseclone) { 
             var i = 0;
@@ -1949,6 +2052,8 @@ function render() {
     } else if (sceneIndex == 1) {
         scenePass.camera = cameraTolppa;
         scenePass.scene = sceneTolppa;
+
+        doLights(currentRow,sceneTolppa);
 
         var animTime = clamp(sceneTime*0.1,0.0,1.0);
         sphereMesh2.position.x = rocket_meshx.getValue(currentRow);
@@ -1996,10 +2101,14 @@ function render() {
 //        cameraTori.position.y=-20.5+millis*1.2;
 //        cameraTori.position.z=-2.+Math.cos(millis)*3.;
 //        cameraTori.rotation.x=Math.cos(millis*0.5)*0.5;
+
+        doLights(currentRow,sceneTori);
+/*
         spotLight_tori1.intensity = 1.0;
         spotLight_tori2.intensity = 1.0;
         spotLight_tori1.position = cameraTori.position;
         spotLight_tori2.position = cameraTori.position;
+*/
         bokehtori.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
         bokehtori.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
         bokehtori.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
@@ -2047,9 +2156,13 @@ function render() {
             });
         }
 
-
+/*
         spotLight_hall1.position.z = Math.abs(Math.cos(millis*0.2)*2.);
         spotLight_hall1.position.x = 5.-Math.abs(Math.sin(millis*0.5)*5.);
+*/
+        doLights(currentRow,sceneHall);
+
+
         composerHall.render(clock.getDelta());
  
     } else if (sceneIndex == 4) {
@@ -2070,6 +2183,7 @@ function render() {
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
         tuniform.iResolution.value = new THREE.Vector2(window.innerWidth*0.5,window.innerHeight*0.5);
         tuniform.iMouse.value = new THREE.Vector2(rocket_meshx.getValue(currentRow),rocket_meshy.getValue(currentRow));
+
         renderer.render(bufferScene, cameraBranchEff, bufferTexture);
         composerBranch.render(clock.getDelta());
 //        renderer.render( sceneBranch, cameraBranch );

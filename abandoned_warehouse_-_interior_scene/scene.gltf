@@ -4311,13 +4311,13 @@
       "uri": "textures/DM_Watch_Your_Step_graffiti_diffuse.png"
     },
     {
-      "uri": "textures/briques-sur-fenetre_diffuse.jpg"
+      "uri": "textures/briques-sur-fenetre_diffuse.png"
     },
     {
       "uri": "textures/briques-sur-fenetre_normal.png"
     },
     {
-      "uri": "textures/briques-sur-fenetre_diffuse.jpg"
+      "uri": "textures/briques-sur-fenetre_diffuse.png"
     },
     {
       "uri": "textures/fenetre.004_diffuse.jpg"
@@ -4371,10 +4371,10 @@
       "uri": "textures/gravas_specularGlossiness.png"
     },
     {
-      "uri": "textures/colonne-beton.001_diffuse.png"
+      "uri": "textures/colonne-beton.001_diffuse.jpg"
     },
     {
-      "uri": "textures/colonne-beton.001_specularGlossiness.png"
+      "uri": "textures/colonne-beton.001_diffuse.jpg"
     },
     {
       "uri": "textures/palette_diffuse.png"
