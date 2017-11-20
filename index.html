@@ -1144,42 +1144,7 @@ function loadModels() {
     );
 
 
-    var loadergltf2 = new THREE.GLTFLoader();
-
-    // Load a glTF resource
-    loadergltf2.load(
-        // resource URL
-        'fleurs/scene.gltf',
-        // called when the resource is loaded
-        function ( gltf ) {
-
             addGLTFCount();
-
-            gltf.scene.traverse( function ( child ) {
-//                if ( child instanceof THREE.Mesh ) {
-                    child.position.z = 1.5;
-                    child.position.y = 10;
-                    child.position.x = 13;
-                    child.scale.set(0.3,0.3,0.3);
-//                }
-            });
-//            sceneTori.add(fleurGroup);     
-
-        },
-        // called when loading is in progresses
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        // called when loading has errors
-        function ( error ) {
-
-            console.log( 'An error happened:' + error );
-
-        }
-    );
-
 
     var loadergltf3 = new THREE.GLTFLoader();
 

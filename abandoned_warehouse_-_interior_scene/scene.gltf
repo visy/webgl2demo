@@ -4296,10 +4296,10 @@
   ],
   "images": [
     {
-      "uri": "textures/poutre-toit.001_diffuse.png"
+      "uri": "textures/poutre-toit.001_diffuse.jpg"
     },
     {
-      "uri": "textures/poutre-toit.001_specularGlossiness.png"
+      "uri": "textures/poutre-toit.001_diffuse.jpg"
     },
     {
       "uri": "textures/colonne-beton_diffuse.png"
@@ -4311,13 +4311,13 @@
       "uri": "textures/DM_Watch_Your_Step_graffiti_diffuse.png"
     },
     {
-      "uri": "textures/briques-sur-fenetre_diffuse.png"
+      "uri": "textures/briques-sur-fenetre_diffuse.jpg"
     },
     {
       "uri": "textures/briques-sur-fenetre_normal.png"
     },
     {
-      "uri": "textures/briques-sur-fenetre_specularGlossiness.png"
+      "uri": "textures/briques-sur-fenetre_diffuse.jpg"
     },
     {
       "uri": "textures/fenetre.004_diffuse.jpg"
@@ -4359,10 +4359,10 @@
       "uri": "textures/sol_emissive.png"
     },
     {
-      "uri": "textures/toiture-tole_diffuse.png"
+      "uri": "textures/toiture-tole.001_diffuse.jpg"
     },
     {
-      "uri": "textures/toiture-tole_specularGlossiness.png"
+      "uri": "textures/toiture-tole.001_diffuse.jpg"
     },
     {
       "uri": "textures/gravas_diffuse.jpeg"
@@ -4383,10 +4383,10 @@
       "uri": "textures/TexturesCom_CardboardPlain0019_2_alphamasked_S_diffuse.png"
     },
     {
-      "uri": "textures/toiture-tole.001_diffuse.png"
+      "uri": "textures/toiture-tole.001_diffuse.jpg"
     },
     {
-      "uri": "textures/toiture-tole.001_specularGlossiness.png"
+      "uri": "textures/toiture-tole.001_diffuse.jpg"
     },
     {
       "uri": "textures/TexturesCom_DoorsRollup0044_M_diffuse.png"
@@ -4401,10 +4401,10 @@
       "uri": "textures/mur-fond_specularGlossiness.png"
     },
     {
-      "uri": "textures/briques-ss-fenetre_diffuse.png"
+      "uri": "textures/briques-ss-fenetre_diffuse.jpg"
     },
     {
-      "uri": "textures/briques-ss-fenetre_specularGlossiness.png"
+      "uri": "textures/briques-ss-fenetre_diffuse.jpg"
     },
     {
       "uri": "textures/mur-gauche_diffuse.png"
@@ -4425,10 +4425,10 @@
       "uri": "textures/TexturesCom_CardboardPlain0022_2_alphamasked_S_diffuse.png"
     },
     {
-      "uri": "textures/mur-droite_diffuse.png"
+      "uri": "textures/mur-droite_diffuse.jpg"
     },
     {
-      "uri": "textures/mur-droite_specularGlossiness.png"
+      "uri": "textures/mur-droite_diffuse.jpg"
     },
     {
       "uri": "textures/fenetre.002_diffuse.jpg"
