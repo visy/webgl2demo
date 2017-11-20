@@ -1016,7 +1016,7 @@ var tuniform, clock, audioElement;
 var millis, sceneIndex, prevSceneIndex;
 var screenQuad, sphereMesh2, sphereMesh3, sphereMesh4, composerTolppa, composerPalaset, composerTori, composerHall, composerBranch, materialTolppa, scenePass;
 var syncReady = false;
-var roseclone, rose, poliis, bokeh, bokehrose, bokehtori, bokehbranch;
+var roseclone, rose, poliis, bokeh, bokehrose, bokehtori, bokehbranch, bokehtolppa;
 
 var emitter1,particleGroup1;
 
@@ -1749,6 +1749,11 @@ function init() {
     var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = false;
     composerTolppa.addPass(pass);
+    var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraTolppa);
+    bokehPass2.renderToScreen = false;
+    composerTolppa.addPass(bokehPass2);
+    bokehtolppa = bokehPass2;
+
     var pass = new POSTPROCESSING.FilmPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = true;
     composerTolppa.addPass(pass);
@@ -2109,6 +2114,10 @@ function render() {
         cameraTolppa.position.x = noise.perlin3(millis,millis,millis)*0.004;
         cameraTolppa.position.y = noise.perlin3(millis,millis,millis)*0.002;
         cameraTolppa.position.z = noise.perlin3(millis,millis,millis)*0.003;
+        bokehtolppa.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
+        bokehtolppa.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
+        bokehtolppa.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+
         composerTolppa.render(clock.getDelta());
         //renderer.render( sceneTolppa, cameraTolppa );
 
