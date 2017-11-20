@@ -1365,21 +1365,33 @@ function loadModels() {
                         var clone = null;
 
                         if (child.name == "") {
-
+                            var once = 0;
                             child.traverse( function ( child2 ) {
                                 if (child2.material) {
                                     if (child2.material.name = "PBR sign") {
-                                        child2.material = child2.material.clone();
-                                        if (i == 0) child2.material.map = tx1;
-                                        if (i == 1) child2.material.map = tx2;
-                                        if (i == 2) child2.material.map = tx3;
-                                        if (i == 3) child2.material.map = tx4;
-                                        if (i == 4) child2.material.map = tx5;
-                                        if (i == 5) child2.material.map = tx6;
-                                        if (i == 6) child2.material.map = tx7;
-                                        if (i == 7) child2.material.map = tx8;
-                                        child2.material.map.needsUpdate= true;
-                                        child2.material.needsUpdate= true;
+                                        once++;
+                                        if (once == 8) {
+                                            child2.material = child2.material.clone();
+                                            if (i == 0) child2.material.map = tx1;
+                                            if (i == 1) child2.material.map = tx2;
+                                            if (i == 2) child2.material.map = tx3;
+                                            if (i == 3) child2.material.map = tx4;
+                                            if (i == 4) child2.material.map = tx5;
+                                            if (i == 5) child2.material.map = tx6;
+                                            if (i == 6) child2.material.map = tx7;
+                                            if (i == 7) child2.material.map = tx8;
+                                            child2.material.map.needsUpdate= true;
+                                            child2.material.needsUpdate= true;
+                                        }
+
+                                        if (once < 5) {
+                                            child2.material = child2.material.clone();
+                                            child2.material.aoMap = THREE.ImageUtils.loadTexture('pbrao1.png'),
+                                            child2.material.normalMap = THREE.ImageUtils.loadTexture('pbrnormal1.png'),
+                                            child2.material.map.needsUpdate= true;
+                                            child2.material.needsUpdate= true;
+                                        }
+
                                     }                                    
                                 }
                                 console.log(child2.material);
@@ -1700,7 +1712,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
-    renderer.setPixelRatio( window.devicePixelRatio*1.0 );
+    renderer.setPixelRatio( window.devicePixelRatio*2.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = true;
 
