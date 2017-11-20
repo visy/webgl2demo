@@ -1,6 +1,7 @@
 <html>
 <head>
  <link rel="stylesheet" type="text/css" href="stylesheet.css">
+<link href="https://fonts.googleapis.com/css?family=Nothing+You+Could+Do" rel="stylesheet">
 <style type = "text/css">
 canvas {
     z-index: 3; 
@@ -11,7 +12,7 @@ canvas {
 body {
   margin: 0px;
   overflow: hidden;
-  font-family: "XIPAROS";
+  font-family: 'Nothing You Could Do', cursive;
   line-height: 0.0;
   font-size:6em; 
 }
@@ -27,12 +28,19 @@ span{
   top:50%;
 
   z-index: 6;
-  padding: 10px;
-  text-shadow: 2px 2px #000000; 
-  color: white; 
-
+  padding: 10px; 
+  text-shadow: 2px 2px #8F96A9; 
+  color: #C1C5CF; 
 }
 
+.background {
+  background: #343F61;
+}
+
+.underline {
+  text-decoration: underline;
+}
+ 
 </style>
 <script src = "jquery-3.2.1.min.js"></script>
 <script src = "three.min.js"></script>
@@ -1007,7 +1015,7 @@ void main()
 // Abandoned Warehouse - Interior Scene(https://sketchfab.com/models/1d5285f2e0fd4211a27c8042496d5959) by Aurélien Martel(https://sketchfab.com/aurelien_martel) is licensed under CC Attribution(http://creativecommons.org/licenses/by/4.0/)
 // Bouquet de fleurs tropicales / new version (PBR) by Argos VR Systems is licensed under CC Attribution
 // palloviivashader by branch, other shaders + main demo code & design by visy, music and design by zov, Quadtrip logo by Isildur^Samar
-
+ 
 var camera;
 var cameraPalaset, cameraTolppa, cameraTori, cameraHall, cameraBranch, cameraBranchEff, scenePalaset, sceneTolppa, sceneTori, sceneHall, sceneTolppa2, sceneBranch;
 var renderer;
@@ -2263,15 +2271,25 @@ function animateText(name) {
     var $el = $("." + name + ":first"), text = $.trim($el.text()),
         words = text.split(" "), html = "";
 
+    
+
     for (var i = 0; i < words.length; i++) {
-        html += "<span>" + words[i] + ((i+1) === words.length ? "" : " ") + "</span>";
+        console.log('word: ' + words[i]);
+        var $textEffectStyle = '';
+        if(words[i] == 'Quadtrip' || words[i] == 'Isildur^Samar'|| words[i] == 'branch' || words[i] == 'visy' || words[i] == 'zov') {
+          $textEffectStyle = 'background: #343F61;';
+        } else if(words[i] == 'Vortex') {
+          $textEffectStyle = 'text-decoration: underline;';
+        }
+
+        html += '<span style="' + $textEffectStyle + '">' + words[i] + ((i+1) === words.length ? '' : ' ') + '</span>';
     };
 
     window.leftpres = 0;
 
 
     $el.html(html).children().hide().each(function(i){
-        window.leftpres = ((i*15) % 75);
+        window.leftpres = ((i*25) % 75);
 
         if (window.preve) { 
             window.preve.animate({ opacity: 0, top: "46%" }, 1000);
@@ -2279,10 +2297,14 @@ function animateText(name) {
 
         var value = 0x9F + Math.random() * 0x5F | 0;
         var grayscale = (value << 16) | (value << 8) | value;
-        var color = '#' + grayscale.toString(16);
+        //var color = '#' + grayscale.toString(16);
 
         if ($(this).html() == "<pause>") { } 
-        else { $(this).delay((i*1200)).fadeIn(1000); $(this).css('left', leftpres + "%"); $(this).css('color', color); }
+        else { 
+        
+            $(this).delay((i*1200)).fadeIn(1000); 
+            $(this).css('left', leftpres + "%"); 
+        }
         window.preve = $(this);
         window.prevleftpres = window.leftpres;
     });
@@ -2313,12 +2335,12 @@ function animateText(name) {
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
-<p class = "text1">Quadtrip <pause> presents: <pause> a&nbsp;demo <pause> for&nbsp;Vortex&nbsp;2017</p>
-<p class = "text2">does&nbsp;it matter that much anyway <pause> <pause> <pause> when everything is exploding around you</p>
+<p class = "text1">does&nbsp;it matter that much anyway when everything is exploding around you</p>
+<p class = "text2 background">Quadtrip <pause> presents: Demon&nbsp;Nimi for Vortex 2017</p>
 <p class = "text3">the&nbsp;whole world, ripping out the&nbsp;seams <pause> <pause> <pause> and collapsing inward on itself</p>
 <p class = "text4">the&nbsp;thousands of pieces flying off <pause> <pause> <pause> into the unknown depths like shrapnel</p>
 <p class = "text5">planting broken seeds <pause> <pause> <pause> growing mucous memberanes and oily leaves</p>
-<p class = "text6">ball and lines shader by&nbsp;branch <pause> other shaders + main demo code and design by&nbsp;visy <pause> music and design by&nbsp;zov <pause> Quadtrip logo by Isildur^Samar</p>
+<p class = "text6">ball&nbsp;and&nbsp;lines&nbsp;shader branch <pause> other&nbsp;shaders main&nbsp;demo&nbsp;code&nbsp;design visy <pause> music&nbsp;and&nbsp;sync zov <pause> Quadtrip&nbsp;logo Isildur^Samar</p>
 
 </body>
 </html>
