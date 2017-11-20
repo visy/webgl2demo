@@ -43,6 +43,7 @@ span{
 <script src = "TexGen.js"></script>
 <script src = "subdiv.js"></script>
 <script src = "ShaderExtras.js"></script>
+<script src = "SPE.js"></script>
 <script src = "perlin.js"></script>
 <script src = "jsRocket.js"></script>
 <script src = "syncdata.js"></script>
@@ -1017,6 +1018,8 @@ var screenQuad, sphereMesh2, sphereMesh3, sphereMesh4, composerTolppa, composerP
 var syncReady = false;
 var roseclone, rose, poliis, bokeh, bokehrose, bokehtori, bokehbranch;
 
+var emitter1,particleGroup1;
+
 var spotLight_tori2, spotLight_tori1;
 
 
@@ -1098,6 +1101,32 @@ var syncDevice,
     rocket_light5i,
     //the current row we're on
     row = 0;
+
+
+function initParticles() {
+    particleGroup1 = new SPE.Group({
+        texture: {
+            value: THREE.ImageUtils.loadTexture('smokeparticle.png')
+        },
+        fog: true,
+        scale: 30
+    });
+
+    emitter1 = new SPE.Emitter({
+        type: SPE.distributions.BOX,
+        maxAge: 20,
+        position: {
+            value: new THREE.Vector3(0, 0, 0),
+            spread: new THREE.Vector3( 200, 30, 30 )
+        },
+        particleCount: 10000,
+        isStatic: true
+    });
+
+    particleGroup1.addEmitter( emitter1 );
+    sceneTori.add( particleGroup1.mesh );
+}
+
 
 
 var gltfcount = 0;
@@ -1486,7 +1515,7 @@ function init() {
         cameraBranchEff.aspect = window.innerWidth / window.innerHeight;
         cameraBranchEff.updateProjectionMatrix();
 
-        renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
+        if (renderer) renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
     }
 
     prevSceneIndex = -1;
@@ -1669,10 +1698,9 @@ function init() {
     spotLight.intensity = 0.5;
     sceneHall.add(spotLight);
 
-
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
-    renderer.setPixelRatio( window.devicePixelRatio*2.0 );
+    renderer.setPixelRatio( window.devicePixelRatio*1.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = true;
 
@@ -1781,6 +1809,7 @@ function init() {
     pass.renderToScreen = true;
     composerBranch.addPass(pass);
 
+    initParticles();
 
     document.body.appendChild( renderer.domElement );
 
@@ -2073,6 +2102,9 @@ function render() {
         //renderer.render( sceneTolppa, cameraTolppa );
 
     } else if (sceneIndex == 2 || sceneIndex == 5) {
+
+    particleGroup1.tick( clock.getDelta() );
+
 //        cameraTori.setTarget( 'poliistarget' );
 //        cameraTori.update();
         scenePass.camera = cameraTori;
