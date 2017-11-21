@@ -943,6 +943,204 @@ void main() {
  }
 </script>
 
+<script id = "fragmentPink" type = "glsl">
+uniform float iTime;
+uniform float iAlpha;
+varying vec2 vUv;
+
+float NEAR_CLIPPING_PLANE=0.1;
+float FAR_CLIPPING_PLANE=200.;
+int NUMBER_OF_MARCH_STEPS=200;
+float EPSILON=0.05;
+float DISTANCE_BIAS=.15;
+float t = 0.;
+
+float sdSphere(vec3 p, float s)
+{
+    return length(p) - (s+cos(p.z)*0.1);
+}
+
+float sdBox( vec3 p, vec3 b )
+{
+  vec3 d = abs(p) - b;
+  return min(max(d.x,max(d.y,d.z)),0.0) +
+         length(max(d,0.0));
+}
+
+float sdPlane( vec3 p, vec4 n )
+{
+  return dot(p,n.xyz) + n.w;
+}
+
+
+float fmod(float a, float b)
+{
+    if(a<0.0)
+    {
+        return b - mod(abs(a), b);
+    }
+    return mod(a, b);
+}
+
+const float kHashScale1 = 443.8975;
+
+float hash11(float p) {
+  vec3 p3 = fract(vec3(p) * kHashScale1);
+  p3 += dot(p3, p3.yzx + 19.19);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+void pR(inout vec2 p, float a) {
+    p = cos(a)*p + sin(a)*vec2(p.y, -p.x);
+}
+
+float fOpUnionRound(float a, float b, float r) {
+    vec2 u = max(vec2(r - a,r - b), vec2(0));
+    return max(r, min (a, b)) - length(u);
+}
+
+
+vec3 opRepeat(vec3 p, vec3 c){
+  return p-c*floor(p/c)-0.5*c;
+}
+
+float scene(vec3 pos)
+{
+    vec3 translate = vec3(cos(pos.z)*0.1,distance(cos(pos.z+t*10.)*0.1,pos.y)*0.5, t*2.+cos(pos.x));
+    pR(pos.xy,cos(pos.z)*cos(pos.z));
+    vec3 opos = pos - translate;    
+    t = pos.z*0.1+cos(pos.z*0.1)*0.5;
+    pos.xy*=cos(pos.x*0.1)*sin(pos.z*0.1)*5.;
+    vec3 rr = vec3(pos.x*cos(t*0.1+pos.z*0.1),(20.0+t)*0.1+distance(cos(pos.x)*1.5,sin(pos.z))*0.5,2.);
+    vec3 rr2 = vec3(pos.z*sin(t*0.1+pos.z*0.2),(40.0+t)*0.1+distance(sin(pos.y)*0.5,sin(pos.y))*0.5,2.);
+    float finalDist = sdSphere(opRepeat(opos,rr+cos(pos.z)*0.1),abs(cos(pos.z+t)*1.));
+    float finalDist2 = sdSphere(opRepeat(opos,rr2),abs(sin(pos.z+t)*1.))*0.2;
+    finalDist = fOpUnionRound(finalDist,finalDist2,cos(pos.z*2.1+t*0.1)*1.5);
+    
+    return finalDist;
+}
+
+
+vec2 raymarch(vec3 position, vec3 direction)
+{
+    float total_distance = NEAR_CLIPPING_PLANE;
+    float acc = 0.;
+    for(int i = 0 ; i < 200 ; ++i)
+    {
+        vec3 pos = position + direction * total_distance;
+        float result = scene(pos);
+        acc+=cos(result*1.)*.05;
+
+        if(result < EPSILON)
+        {
+            return vec2(total_distance, acc);
+        }
+        
+        total_distance += result * DISTANCE_BIAS;
+        
+        
+        if(total_distance > FAR_CLIPPING_PLANE)
+            break;
+    }
+    return vec2(FAR_CLIPPING_PLANE, acc);
+}
+
+vec3 nr(vec3 n) {
+    return normalize(n);
+}
+
+vec3 normal( in vec3 pos )
+{
+    vec3 eps = vec3(.3,0.,0.)*EPSILON;
+    vec3 nor = vec3(
+        scene(pos+eps.xyy) - scene(pos-eps.xyy),
+        scene(pos+eps.yxy) - scene(pos-eps.yxy),
+        scene(pos+eps.yyx) - scene(pos-eps.yyx) );
+    return nr(nor);
+}
+
+
+
+float orenNayarDiffuse(
+  vec3 lightDirection,
+  vec3 viewDirection,
+  vec3 surfaceNormal,
+  float roughness,
+  float albedo) {
+  
+  float LdotV = dot(lightDirection, viewDirection);
+  float NdotL = dot(lightDirection, surfaceNormal);
+  float NdotV = dot(surfaceNormal, viewDirection);
+
+  float s = LdotV - NdotL * NdotV;
+  float t = mix(1., max(NdotL, NdotV), step(0., s));
+
+  float sigma2 = roughness * roughness;
+  float A = 1. + sigma2 * (albedo / (sigma2 + .13) + .5 / (sigma2 + .33));
+  float B = .45 * sigma2 / (sigma2 + .09);
+
+  return albedo * max(0., NdotL) * (A + B * s / t) / 3.14159;
+}
+
+void main() {
+    // pixel coordinates
+    vec2 uv = -1.0 + 2.0 * vUv;
+    
+    vec3 direction = nr(vec3(uv, 0.));
+
+    t = iTime;
+
+    t += iTime*1.*abs(cos(iTime*0.01));
+
+    float cz = t+16.;
+    
+
+    float FOV = 0.5;
+        
+    vec3 camera_origin = vec3(0., 0.0, cz);
+    vec3 lookAt = vec3(0.0,0.0,cz+1.);
+    
+
+    vec3 forward = nr(lookAt-camera_origin);
+    vec3 right = nr(vec3(forward.z, 0., -forward.x ));
+    vec3 up = nr(cross(forward,right));
+
+    
+    vec3 ro = camera_origin;
+    vec3 rd = nr(forward + FOV*uv.x*right + FOV*uv.y*up);
+
+    vec2 result = raymarch(ro, rd);
+            
+    float fog = pow(1. / (1. + result.x), 0.2);
+            
+    vec3 materialColor = vec3(0.5,1.0-result.x*0.06,1.0-result.x*0.03);
+    vec3 intersection = ro + rd*result.x;
+    
+    vec3 nrml = normal(intersection);
+    vec3 light_dir = nr(vec3(0.,0.0,-1.));
+    vec3 ref = reflect( rd, nrml );
+
+    float dom = smoothstep( -.1, .9, ref.y);
+    float spe = pow(clamp( dot( ref, light_dir ), 0., 1. ),32.);
+
+    float diffuse = orenNayarDiffuse(light_dir,rd,nrml,.3,.3)-result.y*.06;
+
+    float tumm = abs(1.0-result.x)*0.03;
+    
+    diffuse-=tumm;
+    diffuse = clamp(diffuse,-1.0,0.0);
+    
+    vec3 light_color = vec3(1.);
+    vec3 ambient_color = light_color;
+    vec3 diffuseLit = materialColor * (diffuse * light_color + ambient_color);
+    vec3 outColor = diffuseLit*fog+dom*.2+spe*.6;
+    outColor*=1.0-tumm*0.3;
+    gl_FragColor = vec4(outColor,1.0);
+  }
+
+</script>
+
+
 <script id = "fragmentPalaset" type = "glsl">
 uniform float iTime;
 uniform sampler2D iChannel0;
@@ -1017,7 +1215,7 @@ void main()
 // palloviivashader by branch, other shaders + main demo code & design by visy, music and design by zov, Quadtrip logo by Isildur^Samar
  
 var camera;
-var cameraPalaset, cameraTolppa, cameraTori, cameraHall, cameraBranch, cameraBranchEff, scenePalaset, sceneTolppa, sceneTori, sceneHall, sceneTolppa2, sceneBranch;
+var cameraPalaset, cameraTolppa, cameraTori, cameraHall, cameraBranch, cameraBranchEff, cameraPinkEff, scenePalaset, sceneTolppa, sceneTori, sceneHall, sceneTolppa2, sceneBranch;
 var renderer;
 var geometry, material, sphereMesh;
 var tuniform, clock, audioElement;
@@ -1034,7 +1232,7 @@ var spotLight_tori2, spotLight_tori1;
 var spotLight_hall1;
 var tgTexture;
 var rtTexture;
-var materialBranch;
+var materialBranch, materialPink;
 
 var hallMeshes = new Array()
 
@@ -1043,6 +1241,9 @@ var pilarGroup = new THREE.Group();
 
 var bufferScene;
 var bufferTexture;
+var bufferScene2;
+var bufferTexture2;
+
 
 var filmTori, filmTolppa, filmHall, filmBranch, filmPalaset;
 
@@ -1141,7 +1342,7 @@ function initParticles() {
 
 
 var gltfcount = 0;
-var allmodelscount = 5;
+var allmodelscount = 4;
 var audioInited = false;
 // demo init
 
@@ -1224,48 +1425,6 @@ function loadModels() {
 
             addGLTFCount();
 
-    var loadergltf3 = new THREE.GLTFLoader();
-
-    // Load a glTF resource
-    loadergltf3.load(
-        // resource URL
-        'abandoned_warehouse_-_interior_scene/scene.gltf',
-        // called when the resource is loaded
-        function ( gltf ) {
-
-            addGLTFCount();
-
-            var ii = 0;
-            gltf.scene.traverse( function ( child ) {
-//                if ( child instanceof THREE.Mesh ) {
-                    child.rotation.x += 0.0;
-                    hallMeshes.push(child);
-                    sceneHall.add( child );            
-
-//                }
-            });
-
-
-/*
-            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
-            gltf.scene; // THREE.Scene
-            gltf.scenes; // Array&lt;THREE.Scene&gt;
-            gltf.cameras; // Array&lt;THREE.Camera&gt;
-*/
-        },
-        // called when loading is in progresses
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        // called when loading has errors
-        function ( error ) {
-
-            console.log( 'An error happened:' + error );
-
-        }
-    );
 
     var loadergltf4 = new THREE.GLTFLoader();
 
@@ -1519,6 +1678,7 @@ function init() {
     cameraHall = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraBranch = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraBranchEff = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 100 );
+    cameraPinkEff = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.01, 100 );
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -1537,6 +1697,10 @@ function init() {
         cameraBranch.updateProjectionMatrix();
         cameraBranchEff.aspect = window.innerWidth / window.innerHeight;
         cameraBranchEff.updateProjectionMatrix();
+
+        cameraPinkEff.aspect = window.innerWidth / window.innerHeight;
+        cameraPinkEff.updateProjectionMatrix();
+
 
         if (renderer) renderer.setSize( window.innerWidth*0.5, window.innerHeight*0.5 );
     }
@@ -1586,6 +1750,13 @@ function init() {
         side:THREE.DoubleSide,
     });
 
+    materialPink = new THREE.ShaderMaterial({
+        uniforms: tuniform,
+        vertexShader: document.getElementById( 'vertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'fragmentPink' ).textContent,
+        transparent: true,
+        side:THREE.DoubleSide,
+    });
 
     materialBranch = new THREE.ShaderMaterial({
         uniforms: tuniform,
@@ -1729,15 +1900,29 @@ function init() {
 
     bufferScene = new THREE.Scene();
     bufferTexture = new THREE.WebGLRenderTarget( 320*2, 180*2, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
+    bufferScene2 = new THREE.Scene();
+    bufferTexture2 = new THREE.WebGLRenderTarget( 640, 360, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
 
     var pgeometry = new THREE.PlaneGeometry( 3.0, 1.7 );
     var mesh = new THREE.Mesh( pgeometry, materialBranch );
     mesh.position.z = -1;
     bufferScene.add(mesh);
+
+    var pgeometry3 = new THREE.PlaneGeometry( 3, 2 );
+    var mesh = new THREE.Mesh( pgeometry3, materialPink );
+    mesh.position.z = -1;
+    bufferScene2.add(mesh);
+
     var boxMaterial = new THREE.MeshBasicMaterial({map:bufferTexture.texture});
     var mainBoxObject = new THREE.Mesh(pgeometry,boxMaterial);
     mainBoxObject.position.z = -10;
     sceneBranch.add(mainBoxObject);
+
+    var boxMaterial = new THREE.MeshBasicMaterial({map:bufferTexture2.texture});
+    var mainBoxObject = new THREE.Mesh(pgeometry,boxMaterial);
+    mainBoxObject.position.z = -10;
+    sceneHall.add(mainBoxObject);
+
 
     sphereMesh2 = new THREE.Mesh( geometry, materialTolppa );
 
@@ -2181,45 +2366,23 @@ function render() {
         composerTori.render(clock.getDelta());
 
     } else if (sceneIndex == 3) {
-        cameraHall.rotation.x = -1.6;
         scenePass.camera = cameraHall;
         scenePass.scene = sceneHall;
         cameraHall.position.x = rocket_camerax.getValue(currentRow);
         cameraHall.position.y = rocket_cameray.getValue(currentRow);
         cameraHall.position.z = rocket_cameraz.getValue(currentRow);
-        cameraHall.rotation.x += rocket_camerarx.getValue(currentRow);
+        cameraHall.rotation.x = rocket_camerarx.getValue(currentRow);
         cameraHall.rotation.y = rocket_camerary.getValue(currentRow);
         cameraHall.rotation.z = rocket_camerarz.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
         bokeh.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
 
-        var breaktime = rocket_effutime.getValue(currentRow);
+        tuniform.iTime.value = rocket_effutime.getValue(currentRow);
+        tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
+        materialPink.opacity = 1.0;
 
-        if (hallMeshes) {
-            var i = 0;
-
-            if (meshcopy == null) {
-                meshcopy = true;
-                hallMeshes.forEach(function(child) {
-                    i++;
-                    cposx[i] = child.position.x;
-                    cposy[i] = child.position.y;
-                    cposz[i] = child.position.z;
-                });
-            }
-
-            i = 0;
-            hallMeshes.forEach(function(child) {
-                i++;
-                child.position.x = cposx[i];
-                child.position.y = cposy[i];
-                child.position.z = cposz[i];
-                child.position.x += Math.cos(breaktime*0.001+i*0.5)*breaktime;
-                child.position.y += Math.sin(breaktime*0.001+i*0.4)*breaktime;
-                child.position.z += Math.cos(breaktime*0.001+i*0.3)*breaktime;
-            });
-        }
+        renderer.render(bufferScene2, cameraPinkEff, bufferTexture2);
 
 /*
         spotLight_hall1.position.z = Math.abs(Math.cos(millis*0.2)*2.);
@@ -2228,9 +2391,7 @@ function render() {
         doLights(currentRow,sceneHall);
         filmHall.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
-
         composerHall.render(clock.getDelta());
- 
     } else if (sceneIndex == 4) {
         scenePass.camera = cameraBranch;
         scenePass.scene = sceneBranch;
