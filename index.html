@@ -1044,6 +1044,8 @@ var pilarGroup = new THREE.Group();
 var bufferScene;
 var bufferTexture;
 
+var filmTori, filmTolppa, filmHall, filmBranch, filmPalaset;
+
 
 /////////////////////////
 
@@ -1107,6 +1109,7 @@ var syncDevice,
     rocket_light5y,
     rocket_light5z,
     rocket_light5i,
+    rocket_eye,
     //the current row we're on
     row = 0;
 
@@ -1764,6 +1767,7 @@ function init() {
 
     var pass = new POSTPROCESSING.FilmPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = true;
+    filmTolppa = pass;
     composerTolppa.addPass(pass);
 
 
@@ -1779,6 +1783,7 @@ function init() {
     bokehrose = bokehPass2;
     var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
     pass.renderToScreen = true;
+    filmPalaset = pass;
     composerPalaset.addPass(pass);
 
 
@@ -1794,6 +1799,7 @@ function init() {
     bokehtori = bokehPass2;
     var pass = new POSTPROCESSING.FilmPass(sceneTori,cameraTori);
     pass.renderToScreen = true;
+    filmTori = pass;
     composerTori.addPass(pass);
 
 
@@ -1819,6 +1825,7 @@ function init() {
     bokeh = bokehPass;
     var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
     pass.renderToScreen = true;
+    filmHall = pass;
     composerHall.addPass(pass);
 
     composerBranch = new POSTPROCESSING.EffectComposer(renderer);
@@ -1831,6 +1838,7 @@ function init() {
     bokehbranch = bokehPass;
     var pass = new POSTPROCESSING.FilmPass(sceneBranch,cameraBranch);
     pass.renderToScreen = true;
+    filmBranch = pass;
     composerBranch.addPass(pass);
 
     initParticles();
@@ -1944,6 +1952,8 @@ function onSyncReady(){
   rocket_light5y = syncDevice.getTrack('light5_y');
   rocket_light5z = syncDevice.getTrack('light5_z');
   rocket_light5i = syncDevice.getTrack('light5_int');
+
+  rocket_eye = syncDevice.getTrack('eyes');
 
   syncReady = true;
 }
@@ -2094,6 +2104,7 @@ function render() {
         bokehrose.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
         bokehrose.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
         bokehrose.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+        filmPalaset.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
 /*
         sphereMesh.position.z = 1.5;
@@ -2125,6 +2136,7 @@ function render() {
         bokehtolppa.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
         bokehtolppa.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
         bokehtolppa.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+        filmTolppa.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
         composerTolppa.render(clock.getDelta());
         //renderer.render( sceneTolppa, cameraTolppa );
@@ -2172,6 +2184,7 @@ function render() {
         bokehtori.bokehMaterial.uniforms.focus.value = rocket_focus.getValue(currentRow);
         bokehtori.bokehMaterial.uniforms.dof.value = rocket_dof.getValue(currentRow);
         bokehtori.bokehMaterial.uniforms.aperture.value = rocket_aperture.getValue(currentRow);
+        filmTori.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
         composerTori.render(clock.getDelta());
 
@@ -2221,6 +2234,7 @@ function render() {
         spotLight_hall1.position.x = 5.-Math.abs(Math.sin(millis*0.5)*5.);
 */
         doLights(currentRow,sceneHall);
+        filmHall.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
 
         composerHall.render(clock.getDelta());
@@ -2243,6 +2257,7 @@ function render() {
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
         tuniform.iResolution.value = new THREE.Vector2(window.innerWidth*0.5,window.innerHeight*0.5);
         tuniform.iMouse.value = new THREE.Vector2(rocket_meshx.getValue(currentRow),rocket_meshy.getValue(currentRow));
+        filmBranch.material.uniforms.vignetteDarkness.value = rocket_eye.getValue(currentRow);
 
         renderer.render(bufferScene, cameraBranchEff, bufferTexture);
         composerBranch.render(clock.getDelta());
