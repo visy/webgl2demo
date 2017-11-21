@@ -1053,7 +1053,7 @@ var filmTori, filmTolppa, filmHall, filmBranch, filmPalaset;
 
 /////////////////////////
 
-var demoMode = false;
+var demoMode = true;
 
 /////////////////////////
 
@@ -1755,9 +1755,6 @@ function init() {
     composerTolppa = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTolppa, cameraTolppa)
     composerTolppa.addPass(scenePass);
-    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
-    smaapass.renderToScreen = false;
-    composerTolppa.addPass(smaapass);
     var pass = new POSTPROCESSING.GodRaysPass(sceneTolppa,cameraTolppa,sphereMesh2);
     pass.renderToScreen = false;
     composerTolppa.addPass(pass);
@@ -1767,67 +1764,61 @@ function init() {
     bokehtolppa = bokehPass2;
 
     var pass = new POSTPROCESSING.FilmPass(sceneTolppa,cameraTolppa,sphereMesh2);
-    pass.renderToScreen = true;
+    pass.renderToScreen = false;
     filmTolppa = pass;
     composerTolppa.addPass(pass);
+
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = true;
+    composerTolppa.addPass(smaapass);
 
 
     composerPalaset = new POSTPROCESSING.EffectComposer(renderer);
     var scenePass2 = new POSTPROCESSING.RenderPass(scenePalaset, cameraPalaset)
     composerPalaset.addPass(scenePass2);
-    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
-    smaapass.renderToScreen = false;
-    composerPalaset.addPass(smaapass);
     var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraPalaset);
     bokehPass2.renderToScreen = false;
     composerPalaset.addPass(bokehPass2);
     bokehrose = bokehPass2;
     var pass = new POSTPROCESSING.FilmPass(scenePalaset,cameraPalaset);
-    pass.renderToScreen = true;
+    pass.renderToScreen = false;
     filmPalaset = pass;
     composerPalaset.addPass(pass);
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = true;
+    composerPalaset.addPass(smaapass);
 
 
     composerTori = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneTori, cameraTori)
     composerTori.addPass(scenePass);
-    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
-    smaapass.renderToScreen = false;
-    composerTori.addPass(smaapass);
     var bokehPass2 =  new POSTPROCESSING.BokehPass(cameraTori);
     bokehPass2.renderToScreen = false;
     composerTori.addPass(bokehPass2);
     bokehtori = bokehPass2;
     var pass = new POSTPROCESSING.FilmPass(sceneTori,cameraTori);
-    pass.renderToScreen = true;
+    pass.renderToScreen = false;
     filmTori = pass;
     composerTori.addPass(pass);
-
-
-    renderTargetParameters = { format: THREE.RGBAFormat, stencilBuffer: false };
-
-    renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );            
-    effectSaveTarget = new POSTPROCESSING.SavePass( new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters ) );
-    effectSaveTarget.clear = false;
-
-    effectBlend = new POSTPROCESSING.TexturePass( effectSaveTarget.renderTarget );   
-    effectBlend.opacity = 0.5;
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = true;
+    composerTori.addPass(smaapass);
 
     composerHall = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneHall, cameraHall)
     composerHall.addPass(scenePass);
-    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
-    smaapass.renderToScreen = false;
-    composerHall.addPass(smaapass);
 
     var bokehPass =  new POSTPROCESSING.BokehPass(cameraHall);
     bokehPass.renderToScreen = false;
     composerHall.addPass(bokehPass);
     bokeh = bokehPass;
     var pass = new POSTPROCESSING.FilmPass(sceneHall,cameraHall);
-    pass.renderToScreen = true;
+    pass.renderToScreen = false;
     filmHall = pass;
     composerHall.addPass(pass);
+    var smaapass = new POSTPROCESSING.SMAAPass( window.innerWidth, window.innerHeight );
+    smaapass.renderToScreen = true;
+    composerHall.addPass(smaapass);
 
     composerBranch = new POSTPROCESSING.EffectComposer(renderer);
     scenePass = new POSTPROCESSING.RenderPass(sceneBranch, cameraBranch)
