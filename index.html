@@ -1086,20 +1086,21 @@ void main() {
     // pixel coordinates
     vec2 uv = -1.0 + 2.0 * vUv;
     
+    uv.x -= 0.5;
+    
+    
+    if (uv.x < -0.5) uv.x = -1.0-uv.x;
     vec3 direction = nr(vec3(uv, 0.));
-
     t = iTime;
-
-    t += iTime*1.*abs(cos(iTime*0.01));
+    t += iTime*2.*abs(cos(iTime*0.01));
 
     float cz = t+16.;
     
 
-    float FOV = 0.5;
+    float FOV = 0.9;
         
     vec3 camera_origin = vec3(0., 0.0, cz);
-    vec3 lookAt = vec3(0.0,0.0,cz+1.);
-    
+    vec3 lookAt = vec3(cos(iTime*0.5)*0.1,sin(iTime*0.25)*0.2,cz+1.);
 
     vec3 forward = nr(lookAt-camera_origin);
     vec3 right = nr(vec3(forward.z, 0., -forward.x ));
@@ -1854,10 +1855,13 @@ function init() {
     spotLight_tori1 = new THREE.PointLight( 0xffffff, 1, 100 );
     spotLight_tori1.castShadow = false;
     spotLight_tori1.position.set( 0, 0, -5 );
+
     sceneTori.add( spotLight_tori1 );
     spotLight_tori2 = new THREE.PointLight( 0xffffff, 1, 100 );
     spotLight_tori2.castShadow = true;
     spotLight_tori2.position.set( 0, 0, 5 );
+    spotLight_tori2.shadow.mapSize.width = 2048.;
+    spotLight_tori2.shadow.mapSize.height = 2048;
     sceneTori.add( spotLight_tori2 );
 
     var spotLight = new THREE.SpotLight(0xffffff);
@@ -1897,6 +1901,7 @@ function init() {
     renderer.setPixelRatio( window.devicePixelRatio*1.0 );
     renderer.setClearColor( 0x000000, 1);
     renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
     bufferScene = new THREE.Scene();
     bufferTexture = new THREE.WebGLRenderTarget( 320*2, 180*2, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
@@ -2541,7 +2546,7 @@ function animateText(name) {
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
 <p class = "text1">#leftzero #restarty does&nbsp;it&nbsp;matter #linebr #linebr #leftpush that much #pause anyway?</p>
-<p class = "text2">#restarty #leftpush #leftpush Quadtrip presents #pause #linebr #leftzero Demon&nbsp;Nimi #linebr for Vortex&nbsp;2017</p>
+<p class = "text2">#restarty #leftpush #leftpush Quadtrip presents #pause #linebr #leftzero Observer #linebr for Vortex&nbsp;2017</p>
 <p class = "text3">#leftzero #restarty the&nbsp;whole&nbsp;world #pause #linebr ripping out #pause at&nbsp;the&nbsp;seams #pause #pause #pause #linebr #linebr collapsing&nbsp;inward on itself</p>
 <p class = "text4">#leftzero #restarty pieces flying off #pause #pause #pause into the depths like shrapnel</p>
 <p class = "text5">#leftzero #restarty planting broken seeds #pause #pause #pause #linebr growing mucous memberanes and oily leaves</p>
