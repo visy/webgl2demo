@@ -1743,7 +1743,7 @@ function init() {
         iMouse:         { value: new THREE.Vector2() }, 
         iChannel0:      { value: loader.load( 'tex1.jpg') },
         iChannel1:      { value: loader.load( 'tex2.jpg' ) },
-        fov:            { value: 10.0 }
+        FOV:            { value: 0.5 }
     };
 
     tuniform.iChannel0.value.wrapS = tuniform.iChannel0.value.wrapT = THREE.RepeatWrapping;
@@ -2404,7 +2404,7 @@ function render() {
 
         tuniform.iTime.value = rocket_effutime.getValue(currentRow);
         tuniform.iAlpha.value = rocket_mesha.getValue(currentRow);
-        tuniform.fov.value = rocket_meshfov.getValue(currentRow);
+        tuniform.FOV.value = rocket_meshfov.getValue(currentRow);
         materialPink.opacity = 1.0;
 
         renderer.render(bufferScene2, cameraPinkEff, bufferTexture2);
