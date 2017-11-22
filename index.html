@@ -1549,12 +1549,29 @@ function loadModels() {
             gltf.scene.traverse( function ( child ) {
                     console.log("-" + child.name + "-")
                     if (child.material) console.log("-" + child.material.map + "-")
+
                     for (i = 0; i < 8; i++) {
                         var clone = null;
+                    var knots = 0;
 
                         if (child.name == "") {
                             var once = 0;
                             child.traverse( function ( child2 ) {
+
+                                if (child2.name == "Torus_Knot001") {
+                                    child2.material = child2.material.clone();
+                                    if (i == 0) child2.material = new THREE.MeshPhysicalMaterial({color: 0x222211,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.9}); 
+                                    if (i == 1) child2.material = new THREE.MeshPhysicalMaterial({color: 0x112211,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.8}); 
+                                    if (i == 2) child2.material = new THREE.MeshPhysicalMaterial({color: 0x222211,transparent: true,opacity:0.0,side: THREE.DoubleSide}); 
+                                    if (i == 3) child2.material = new THREE.MeshPhysicalMaterial({color: 0x111122,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.7}); 
+                                    if (i == 4) child2.material = new THREE.MeshPhysicalMaterial({color: 0x221122,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.9}); 
+                                    if (i == 5) child2.material = new THREE.MeshPhysicalMaterial({color: 0x112222,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.8}); 
+                                    if (i == 6) child2.material = new THREE.MeshPhysicalMaterial({color: 0x221122,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.7}); 
+                                    if (i == 7) child2.material = new THREE.MeshPhysicalMaterial({color: 0x111122,transparent: false,side: THREE.DoubleSide,clearCoat: 0.5,metalness:0.9}); 
+                                    child2.scale.set(0.75,0.75,0.75);
+                                    child2.material.needsUpdate= true;
+                                }
+
                                 if (child2.material) {
 
                                     if (child2.material.name = "PBR sign") {
@@ -1577,33 +1594,33 @@ function loadModels() {
                                             child2.material.normalMap = THREE.ImageUtils.loadTexture('pbrnormal1.png');
                                             child2.material.needsUpdate= true;
                                         }
-
-                                    } else {
-
-                                    }                              
-                                }
+                                    } 
+                                }                              
                                 console.log(child2.material);
                             });
+
+                            clone = child.clone();
+                            clone.receiveShadow = true;
+                            clone.castShadow = true;
+                            clone.position.z = 5;
+                            clone.position.y = -9.0;
+                            clone.position.x = -1+i*5;
+
+                            clone.scale.set(0.02,0.02,0.02);
+                            sceneTori.add(clone);
+
+                            clone = child.clone();
+                            clone.receiveShadow = true;
+                            clone.castShadow = true;
+                            clone.position.z = -5;
+                            clone.position.y = -9.0;
+                            clone.position.x = -1+i*5;
+        
+                            clone.scale.set(0.02,0.02,0.02);
+                            sceneTori.add(clone);
+
                         } 
-                        clone = child.clone();
-                        clone.receiveShadow = true;
-                        clone.castShadow = true;
-                        clone.position.z = 5;
-                        clone.position.y = -9.0;
-                        clone.position.x = -1+i*5;
 
-                        clone.scale.set(0.02,0.02,0.02);
-                        sceneTori.add(clone);
-
-                        clone = child.clone();
-                        clone.receiveShadow = true;
-                        clone.castShadow = true;
-                        clone.position.z = -5;
-                        clone.position.y = -9.0;
-                        clone.position.x = -1+i*5;
-
-                        clone.scale.set(0.02,0.02,0.02);
-                        sceneTori.add(clone);
                         
                     }
     //                if ( child instanceof THREE.Mesh ) {
