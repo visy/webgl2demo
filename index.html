@@ -1324,18 +1324,29 @@ function initParticles() {
             value: THREE.ImageUtils.loadTexture('smokeparticle.png')
         },
         fog: true,
-        scale: 30
+        scale: 30,
+        depthWrite: true,
+        blending: THREE.NormalBlending
     });
+
 
     emitter1 = new SPE.Emitter({
         type: SPE.distributions.BOX,
-        maxAge: 20,
+        maxAge: {
+            value: 20,
+            spread: 20
+        },    
+        velocity: {
+            value: new THREE.Vector3(0.05, 0.05, 0.05),
+            spread: new THREE.Vector3(0.01, .03, 0.02)
+        },
         position: {
             value: new THREE.Vector3(0, 0, 0),
             spread: new THREE.Vector3( 200, 30, 30 )
         },
+        opacity: { value: [0.0, 1.0, 0] },
         particleCount: 10000,
-        isStatic: true
+        isStatic: false,
     });
 
     particleGroup1.addEmitter( emitter1 );
