@@ -1333,8 +1333,7 @@ function initParticles() {
     emitter1 = new SPE.Emitter({
         type: SPE.distributions.BOX,
         maxAge: {
-            value: 20,
-            spread: 20
+            value: 400
         },    
         velocity: {
             value: new THREE.Vector3(0.05, 0.05, 0.05),
@@ -1344,8 +1343,8 @@ function initParticles() {
             value: new THREE.Vector3(0, 0, 0),
             spread: new THREE.Vector3( 200, 30, 30 )
         },
-        opacity: { value: [0.0, 1.0, 0] },
-        particleCount: 10000,
+        activeMultiplier: 2000,
+        particleCount: 40000,
         isStatic: false,
     });
 
