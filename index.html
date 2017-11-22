@@ -2461,7 +2461,7 @@ function animateText(name) {
     var fadeFloat = 3;
     var textY = topUpper;
     var leftStep = 32;
-    var textX = 20 + leftStep;
+    var textX = 5;
 
     
 
@@ -2470,8 +2470,8 @@ function animateText(name) {
         var $textEffectStyle = '';
         if(words[i] == 'Quadtrip' || words[i] == 'Isildur^Samar'|| words[i] == 'branch' || words[i] == 'visy' || words[i] == 'zov') {
           $textEffectStyle = 'background: #343F61;';
-        } else if(words[i] == 'Vortex&nbsp;2017') {
-          $textEffectStyle = 'text-decoration: underline;';
+        } else if(words[i] == 'Observer') {
+          $textEffectStyle = 'text-decoration: underline; color: red;';
         }
 
         html += '<span style="' + $textEffectStyle + '">' + words[i] + ((i+1) === words.length ? '' : ' ') + '</span>';
@@ -2481,7 +2481,7 @@ function animateText(name) {
 
 
     $el.html(html).children().hide().each(function(i){
-      console.log('current textpart: ' + $(this).html() + ', top value: ' + textY);
+      console.log('current text: ' + $(this).html() + ', top: ' + textY + ', left: ' + textX);
 
         window.leftpres = 12 + ((i*25) % 75);
 
@@ -2493,7 +2493,7 @@ function animateText(name) {
         var grayscale = (value << 16) | (value << 8) | value;
         //var color = '#' + grayscale.toString(16);
 
-        if ($(this).html().indexOf('#restarty') > -1) {
+        /*if ($(this).html().indexOf('#restarty') > -1) {
           console.log('linebreik');
           $(this).html($(this).html().replace('#restarty', ''));
           textY = topUpper;
@@ -2509,23 +2509,31 @@ function animateText(name) {
           console.log('lefty zero');
           $(this).html($(this).html().replace('#leftzero', ''));
           textX = leftStep;
-        }
+        }*/
 
         if ($(this).html().indexOf('#linebr') > -1) {
           console.log('linebreik');
           $(this).html($(this).html().replace('#linebr', ''));
-          textY += topStep;
-        }
-
-        if ($(this).html().indexOf('#pause') > -1) {
+          //textY += topStep;
+        } else if ($(this).html().indexOf('#top') > -1) {
+          console.log('topcoord ' + $(this).html().substring($(this).html().indexOf('-')+1, $(this).html().length-1));
+          textY = $(this).html().substring($(this).html().indexOf('-')+1, $(this).html().length-1);
+          $(this).html('');
+          console.log(textY);
+        } else if ($(this).html().indexOf('#left') > -1) {
+          console.log('leftcoord ' + $(this).html().substring($(this).html().indexOf('-')+1, $(this).html().length-1));
+          textX = $(this).html().substring($(this).html().indexOf('-')+1, $(this).html().length-1);
+          $(this).html('');
+          console.log(textX);
+        } else if ($(this).html().indexOf('#pause') > -1) {
           console.log('pausella');
           $(this).html($(this).html().replace('#pause', ''));
         } else { 
         console.log('eipause');
             $(this).delay((i*900)).fadeIn(800); 
-            $(this).css('left', leftpres + "%"); 
-            $(this).css('margin-left', leftpres + "px"); 
-             $(this).css('top', textY + '%');
+            $(this).css('left', textX + "%"); 
+            //$(this).css('margin-left', leftpres + "px"); 
+            $(this).css('top', textY + '%');
         }
         window.preve = $(this);
         window.prevleftpres = window.leftpres;
@@ -2538,7 +2546,6 @@ function animateText(name) {
         }
     });    
 }
-
 </script>
 </head>
 
@@ -2557,12 +2564,15 @@ function animateText(name) {
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
-<p class = "text1">#leftzero #restarty does&nbsp;it&nbsp;matter #linebr #linebr #leftpush that much #pause anyway?</p>
-<p class = "text2">#restarty #leftpush #leftpush Quadtrip presents #pause #linebr #leftzero Observer #linebr for Vortex&nbsp;2017</p>
-<p class = "text3">#leftzero #restarty the&nbsp;whole&nbsp;world #pause #linebr ripping out #pause at&nbsp;the&nbsp;seams #pause #pause #pause #linebr #linebr collapsing&nbsp;inward on itself</p>
-<p class = "text4">#leftzero #restarty pieces flying off #pause #pause #pause into the depths like shrapnel</p>
-<p class = "text5">#leftzero #restarty planting broken seeds #pause #pause #pause #linebr growing mucous memberanes and oily leaves</p>
-<p class = "text6">#leftzero #restarty ball&nbsp;and&nbsp;lines&nbsp;shader branch #linebr #linebr #linebr other&nbsp;shaders&nbsp;main&nbsp;code design visy #linebr music&nbsp;and&nbsp;sync zov #linebr Quadtrip&nbsp;logo Isildur^Samar</p>
+<p class = "text1">#top-30 #left-50 did&nbsp;it&nbsp;matter #linebr #linebr #left-10 that #left-20 #top-35 much #pause #left-40 #top-43 anyway?</p>
+<p class = "text2">#top-25 #left-18 Quadtrip #left-25 presents #pause #linebr #top-40 #left-62 Observer #linebr #left-40 for #left-41 #top-47 Vortex&nbsp;2017</p>
+<p class = "text3">#top-50 #left-8 the&nbsp;world #pause #linebr #left-18 ripped #left-23 out #pause at&nbsp;the&nbsp;seams #pause #pause #pause #linebr #linebr #left-62 #top-55 collapsed&nbsp;inward #left-68 #top-40 on&nbsp;itself</p>
+<p class = "text4">#top-47 #left-35 pieces #top-41 flew #top-56 off #top-20 #left-60 into #left-66 the #left-70 depths</p>
+<p class = "text5">#top-20 #left-30 planting broken seeds #pause #pause #pause #linebr growing mucous memberanes and oily leaves #top-35 #left-1</p>
+<p class = "text6">ball&nbsp;and&nbsp;lines&nbsp;shader #left-60 branch</p> 
+<p class="text7">#top-25 #left-30 other&nbsp;shaders&nbsp;,&nbsp;main&nbsp;code&nbsp;design #left-60 visy</p> 
+<p class="text8">#top-40 #left-25 music&nbsp;and&nbsp;sync #left-65 zov</p>
+<p class="text9">#top-10 #left-40 Quadtrip&nbsp;logo #left-50 Isildur^Samar</p>
 
 </body>
 </html>
