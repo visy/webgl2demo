@@ -1086,10 +1086,12 @@ void main() {
     // pixel coordinates
     vec2 uv = -1.0 + 2.0 * vUv;
     
-    uv.x -= 0.5;
-    
-    
-    if (uv.x < -0.5) uv.x = -1.0-uv.x;
+    if (iAlpha >= 0.9) {
+        uv.x -= 0.5;
+        
+        if (uv.x < -0.5) uv.x = -1.0-uv.x;
+    }
+
     vec3 direction = nr(vec3(uv, 0.));
     t = iTime;
     t += iTime*2.*abs(cos(iTime*0.01));
