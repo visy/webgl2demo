@@ -1928,7 +1928,7 @@ function init(qqq) {
 
     bufferScene = new THREE.Scene();
     bufferScene2 = new THREE.Scene();
-    bufferTexture = new THREE.WebGLRenderTarget( 640*quality, 360*quality, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter});
+    bufferTexture = new THREE.WebGLRenderTarget( 256*quality, 144*quality, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter});
     bufferTexture2 = new THREE.WebGLRenderTarget( 1280*quality, 720*quality, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter});
 
     var pgeometry = new THREE.PlaneGeometry( 3.0, 1.7 );
@@ -2429,9 +2429,9 @@ function render() {
             var r2 = rng.nextFloat();
             var r3 = rng.nextFloat();
 
-            knot.rotation.x += delta*r;
-            knot.rotation.y += delta*r2;
-            knot.rotation.z += delta*r3;
+            knot.rotation.x += (delta*r)/2.5;
+            knot.rotation.y += (delta*r2)/2.5;
+            knot.rotation.z += (delta*r3)/2.5;
             k++;
         });
 
@@ -2532,7 +2532,7 @@ function animateText(name) {
         if(words[i] == 'Quadtrip' || words[i] == 'Isildur^Samar'|| words[i] == 'branch' || words[i] == 'visy' || words[i] == 'zov') {
           $textEffectStyle = 'background: #343F61;';
         } else if(words[i] == 'Observer') {
-          $textEffectStyle = 'text-decoration: underline; color: #84807b;';
+          $textEffectStyle = 'color: #84807b; background: #343F61;';
         }
 
         html += '<span style="' + $textEffectStyle + '">' + words[i] + ((i+1) === words.length ? '' : ' ') + '</span>';
@@ -2628,14 +2628,15 @@ function animateText(name) {
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
 </audio>
 <p class = "text1">#top-30 #left-50 did&nbsp;it&nbsp;matter #linebr #linebr #left-10 that #left-20 #top-35 much #pause #left-40 #top-43 anyway?</p>
-<p class = "text2">#top-25 #left-18 Quadtrip #left-25 presents #pause #linebr #top-40 #left-62 Observer #linebr #left-40 for #left-41 #top-47 Vortex&nbsp;2017</p>
+<p class = "text2">#top-29 #left-16 Quadtrip #left-25 presents #pause #linebr #top-42 #left-45 Observer #linebr #left-40 for #left-41 #top-47 Vortex&nbsp;2017</p>
 <p class = "text3">#top-50 #left-8 the&nbsp;world #pause #linebr #left-18 ripped #left-23 out #pause at&nbsp;the&nbsp;seams #pause #pause #pause #linebr #linebr #left-62 #top-55 collapsed&nbsp;inward #left-68 #top-40 on&nbsp;itself</p>
 <p class = "text4">#top-47 #left-35 pieces #top-41 scattered #top-56 off #top-20 #left-60 into #left-66 the #left-70 depths</p>
-<p class = "text5">#top-20 #left-30 planting broken seeds #pause #pause #pause #linebr growing mucous memberanes and oily leaves #top-35 #left-1</p>
+<p class = "text5">#top-20 #left-30 planting broken seeds #pause #pause #pause #linebr growing mucous memberanes and oily leaves #top-32 #left-1</p>
 <p class = "text6">ball&nbsp;and&nbsp;lines&nbsp;shader #left-60 branch</p> 
 <p class="text7">#top-25 #left-30 other&nbsp;shaders&nbsp;,&nbsp;main&nbsp;code&nbsp;design #left-60 visy</p> 
 <p class="text8">#top-40 #left-25 music&nbsp;and&nbsp;sync #left-65 zov</p>
-<p class="text9">#top-10 #left-40 Quadtrip&nbsp;logo #left-50 Isildur^Samar</p>
-<p class="text10">#top-45 #left-45 anyway.</p>
+<p class="text9">#top-5 #left-40 Quadtrip&nbsp;logo #left-50 Isildur^Samar</p>
+<p class="text10">#top-25 #left-50 models &nbsp; cosmicollie&nbsp;maali</p>
+<p class="text11">#top-45 #left-45 anyway,</p>
 </body>
 </html>
