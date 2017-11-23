@@ -1471,51 +1471,9 @@ function loadModels() {
     );
 
 
-            addGLTFCount();
+        addGLTFCount();
+        addGLTFCount();
 
-
-    var loadergltf4 = new THREE.GLTFLoader();
-
-    // Load a glTF resource
-    loadergltf4.load(
-        // resource URL
-        'time_fuse/scene.gltf',
-        // called when the resource is loaded
-        function ( gltf ) {
-
-            addGLTFCount();
-            gltf.scene.traverse( function ( child ) {
-//                if ( child instanceof THREE.Mesh ) {
-                    child.position.x -= 2.;
-                    child.position.y -= 0.;
-                    child.position.z -= 24.;
-                    child.rotation.x = 1.;
-                    scenePalaset.add( child );            
-//                    child.visible = false;
-//                }
-            });
-
-
-/*
-            gltf.animations; // Array&lt;THREE.AnimationClip&gt;
-            gltf.scene; // THREE.Scene
-            gltf.scenes; // Array&lt;THREE.Scene&gt;
-            gltf.cameras; // Array&lt;THREE.Camera&gt;
-*/
-        },
-        // called when loading is in progresses
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        // called when loading has errors
-        function ( error ) {
-
-            console.log( 'An error happened:' + error );
-
-        }
-    );
 
     var loadergltf5 = new THREE.GLTFLoader();
 
