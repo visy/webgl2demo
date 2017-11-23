@@ -1,6 +1,7 @@
 <html>
 <head>
- <link rel="stylesheet" type="text/css" href="stylesheet.css">
+<title>Observer by Quadtrip</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css">
 <link href="https://fonts.googleapis.com/css?family=Nothing+You+Could+Do" rel="stylesheet">
 <style type = "text/css">
 canvas {
@@ -41,6 +42,34 @@ span{
   text-decoration: underline;
 }
  
+.btn {
+  background: #a5a7a8;
+  background-image: -webkit-linear-gradient(top, #a5a7a8, #535557);
+  background-image: -moz-linear-gradient(top, #a5a7a8, #535557);
+  background-image: -ms-linear-gradient(top, #a5a7a8, #535557);
+  background-image: -o-linear-gradient(top, #a5a7a8, #535557);
+  background-image: linear-gradient(to bottom, #a5a7a8, #535557);
+  -webkit-border-radius: 8;
+  -moz-border-radius: 8;
+  border-radius: 8px;
+  text-shadow: 0px 2px 0px #525252;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #a9bcc7;
+  background-image: -webkit-linear-gradient(top, #a9bcc7, #809099);
+  background-image: -moz-linear-gradient(top, #a9bcc7, #809099);
+  background-image: -ms-linear-gradient(top, #a9bcc7, #809099);
+  background-image: -o-linear-gradient(top, #a9bcc7, #809099);
+  background-image: linear-gradient(to bottom, #a9bcc7, #809099);
+  text-decoration: none;
+}
+
 </style>
 <script src = "jquery-3.2.1.min.js"></script>
 <script src = "three.min.js"></script>
@@ -1261,7 +1290,7 @@ var filmTori, filmTolppa, filmHall, filmBranch, filmPalaset;
 
 var quality = 1.0;
 
-var demoMode = false;
+var demoMode = true;
 
 /////////////////////////
 
@@ -1368,8 +1397,7 @@ function addGLTFCount() {
     gltfcount++;
     console.log("gltfcount:" + gltfcount);
 
-    var dd = document.getElementById("loader");
-    loader.innerHTML = "loading model data (" +gltfcount+"/"+allmodelscount+")"; 
+    document.getElementById("loader").innerHTML = "loading model data (" +gltfcount+"/"+allmodelscount+")"; 
     if (gltfcount >= allmodelscount && !audioInited) {
     console.log("all models loaded");
         modelsdone();
@@ -1377,7 +1405,7 @@ function addGLTFCount() {
 }
 
 function modelsdone() {
-    loader.innerHTML = "initializing demo";
+    document.getElementById("loader").innerHTML = "initializing demo";
     audioElement.oncanplaythrough = onAudioReady;
     setTimeout(function() { audioElement.load(); }, 200);
 
@@ -1386,7 +1414,7 @@ function modelsdone() {
 function loadModels() {
     var loadergltf = new THREE.GLTFLoader();
 
-    // Load a glTF resource
+    // Load a glTF resource"
     loadergltf.load(
         // resource URL
         'rose.gltf',
@@ -1704,7 +1732,15 @@ function loadModels() {
 }
 
 
-function init() {
+function init(qqq) {
+
+    document.getElementById("quality-selector").style.display = "none";
+
+    if (qqq == 0) quality = 0.5;
+    if (qqq == 1) quality = 1.0;
+    if (qqq == 2) quality = 2.0;
+ 
+    document.getElementById("loader").innerHTML = "loading demo...";
 
     cameraPalaset = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.01, 100 );
     cameraTolppa = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
@@ -1939,9 +1975,9 @@ function init() {
     renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
     bufferScene = new THREE.Scene();
-    bufferTexture = new THREE.WebGLRenderTarget( 320*2*quality, 180*2*quality, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
     bufferScene2 = new THREE.Scene();
-    bufferTexture2 = new THREE.WebGLRenderTarget( 640*quality, 360*quality, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
+    bufferTexture = new THREE.WebGLRenderTarget( 640*quality, 360*quality, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter});
+    bufferTexture2 = new THREE.WebGLRenderTarget( 1280*quality, 720*quality, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter});
 
     var pgeometry = new THREE.PlaneGeometry( 3.0, 1.7 );
     var mesh = new THREE.Mesh( pgeometry, materialBranch );
@@ -2086,24 +2122,28 @@ function preloadScenes() {
         scenePass.camera = cameraTolppa;
         scenePass.scene = sceneTolppa;
         composerTolppa.render(100*preloader);
+        loader.innerHTML += ".";
     } else if (preloader == 1) {  
         scenePass.camera = cameraHall;
         scenePass.scene = sceneHall;
         composerHall.render(100*preloader); 
+        loader.innerHTML += ".";
     } else if (preloader == 2) {  
         scenePass.camera = cameraPalaset;
         scenePass.scene = scenePalaset;
         composerPalaset.render(100*preloader);
+        loader.innerHTML += ".";
     } else if (preloader == 3) {  
         scenePass.camera = cameraTori;
         scenePass.scene = sceneTori;
         composerTori.render(100*preloader);
+        loader.innerHTML += ".";
     } else if (preloader == 4) {  
         renderer.render(bufferScene, cameraBranchEff, bufferTexture);
         renderer.render( sceneBranch, cameraBranch );
+        loader.innerHTML += ".";
     }
 
-    loader.innerHTML += ".";
 
     preloader++;
     if (preloader < 5) setTimeout(preloadScenes, 100);
@@ -2575,16 +2615,18 @@ function animateText(name) {
 </head>
 
 <body>
-<script>
-    window.addEventListener('load', function() {
-        init();
-        console.log("demo start");
-    }, false);
-
-</script>
+<div id = "quality-selector" style = "width:100%; height: 100%; background-color:#333333;z-index:999;text-align: center;">
+<div style = "padding: 0;margin-bottom:0px;padding-top: 50px; margin-top:0px;color:#888888;font-size:0.5em;">Select graphics quality to start</div>
+<div id = "button-container" style = "padding-top: 80px; text-align: center;">
+<button name="lowbtn" class = "btn" onclick="init(0)">Low quality</button>
+<button name="medbtn" class = "btn" onclick="init(1)">Medium quality</button>
+<button name="hibtn" class = "btn" onclick="init(2)">High quality</button>
+</div>
+<img src = "quadtriplogo.png" style = "display:block; height: 85%; margin-left: auto; margin-right:auto"/>
+</div>
 <div id = "blocker" style = "width:100%; height: 100%; position:fixed; background-color: black;z-index: 5;"></div>
 
-<div id = "loader" style = "position:fixed;left:0%;top:85%; color: white; font-size:48px; z-index: 6">loading data, please wait...</div>
+<div id = "loader" style = "position:fixed;left:0%;top:85%; color: white; font-size:48px; z-index: 6"></div>
 <audio id="audio" style = "display:none" preload="auto" loop=false>
     <source src="plz_u.ogg" id="oggSource" type="audio/ogg" />
     <source src="plz_u.mp3" id="mp3Source" type="audio/mpeg" />
